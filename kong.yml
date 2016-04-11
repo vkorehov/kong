@@ -99,6 +99,8 @@
   # contact_points:
   #   - "127.0.0.1:9042"
 
+  # port: 9042
+
   ######
   ## Name of the keyspace used by Kong. Will be created if it does not exist.
   # keyspace: kong

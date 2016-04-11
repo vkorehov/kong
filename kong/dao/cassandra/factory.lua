@@ -114,6 +114,9 @@ function CassandraFactory:get_session_options()
     prepared_shm = "cassandra_prepared",
     contact_points = self.properties.contact_points,
     keyspace = self.properties.keyspace,
+    protocol_options = {
+      default_port = self.properties.port
+    },
     query_options = {
       prepare = true
     },
