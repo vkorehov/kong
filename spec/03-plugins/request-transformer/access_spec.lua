@@ -108,7 +108,7 @@ describe("plugin: request transformer", function()
   end)
 
   before_each(function()
-    client = assert(helpers.http_client("127.0.0.1", helpers.proxy_port))
+    client = assert(helpers.proxy_client())
   end)
 
   after_each(function()
@@ -117,7 +117,7 @@ describe("plugin: request transformer", function()
 
   describe("remove", function()
     it("specified header", function()
-      local response = assert(client:send {
+      local res = assert(client:send {
         method = "GET",
         path = "/request",
         headers = {
@@ -126,10 +126,10 @@ describe("plugin: request transformer", function()
           ["x-another-header"] = "true"
         }
       })
-      assert.res_status(200, response)
-      local json = assert.has.jsonbody(response)
-      assert.has.no.header("x-to-remove", json)
-      assert.has.header("x-another-header", json)
+      assert.response(res).has.status(200)
+      assert.response(res).has.jsonbody()
+      assert.request(res).has.no.header("x-to-remove")
+      assert.request(res).has.header("x-another-header")
     end)
     it("parameters on url encoded form POST", function()
       local response = assert(client:send {
