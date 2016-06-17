@@ -115,11 +115,14 @@ function _M.start_tls(socket)
   ldapMessageId = ldapMessageId +1
   ldapMsg = encoder:encode(ldapMessageId) .. encodeLDAPOp(encoder, APPNO.ExtendedRequest, true, method_name)
   packet = encoder:encodeSeq(ldapMsg)
-  socket:send(packet)
-  packet = socket:receive(2)
+  local succes, err = socket:send(packet)
+  if not succes then error("LDAP connection error, failed sending packet; "..err) end
+  packet, err = socket:receive(2)
+  if not packet then error("LDAP connection error, failed receiving payload length; "..err) end
   _, packet_len = calculate_payload_length(packet, 2, socket)
 
-  packet = socket:receive(packet_len)
+  packet, err = socket:receive(packet_len)
+  if not packet then error("LDAP connection error, failed receiving payload; "..err) end
   pos, response.messageID = decoder:decode(packet, 1)
   pos, tmp = bunpack(packet, "C", pos)
   pos = decoder.decodeLength(packet, pos)
