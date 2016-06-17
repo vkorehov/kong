@@ -25,9 +25,9 @@ local dao = DAOFactory(conf)
 --------------------
 -- Custom properties
 --------------------
-local admin_port = string.match(conf.admin_listen, ":([%d]+)$")
-local proxy_port = string.match(conf.proxy_listen, ":([%d]+)$")
-local ssl_proxy_port = string.match(conf.proxy_listen_ssl, ":([%d]+)$")
+local admin_port = assert(string.match(conf.admin_listen, ":([%d]+)$"))
+local proxy_port = assert(string.match(conf.proxy_listen, ":([%d]+)$"))
+local ssl_proxy_port = assert(string.match(conf.proxy_listen_ssl, ":([%d]+)$"))
 
 -----------------
 -- Custom helpers

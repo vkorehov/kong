@@ -29,7 +29,7 @@ local function encodeLDAPOp(encoder, appno, isConstructed, data)
   return encoder:encode({ _ldaptype = string_format("%X", asn1_type), data })
 end
 
-local function claculate_payload_length(encStr, pos, socket)
+local function calculate_payload_length(encStr, pos, socket)
   local elen
   pos, elen = bunpack(encStr, 'C', pos)
   if (elen > 128) then
@@ -60,11 +60,14 @@ function _M.bind_request(socket, username, password)
 
   packet = encoder:encodeSeq(ldapMsg)
   ldapMessageId = ldapMessageId +1
-  socket:send(packet)
-  packet = socket:receive(2)
-  _, packet_len = claculate_payload_length(packet, 2, socket)
+  local succes, err = socket:send(packet)
+  if not succes then error("LDAP connection error, failed sending packet; "..err) end
+  packet, err = socket:receive(2)
+  if not packet then error("LDAP connection error, failed receiving payload length; "..err) end
+  _, packet_len = calculate_payload_length(packet, 2, socket)
 
-  packet = socket:receive(packet_len)
+  packet, err = socket:receive(packet_len)
+  if not packet then error("LDAP connection error, failed receiving payload; "..err) end
   pos, response.messageID = decoder:decode(packet, 1)
   pos, tmp = bunpack(packet, "C", pos)
   pos = decoder.decodeLength(packet, pos)
@@ -114,7 +117,7 @@ function _M.start_tls(socket)
   packet = encoder:encodeSeq(ldapMsg)
   socket:send(packet)
   packet = socket:receive(2)
-  _, packet_len = claculate_payload_length(packet, 2, socket)
+  _, packet_len = calculate_payload_length(packet, 2, socket)
 
   packet = socket:receive(packet_len)
   pos, response.messageID = decoder:decode(packet, 1)
