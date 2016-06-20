@@ -1,63 +1,101 @@
-local spec_helper = require "spec.spec_helpers"
+local helpers = require "spec.helpers"
+local cjson = require "cjson"
 local url = require "socket.url"
 local IO = require "kong.tools.io"
-local http_client = require "kong.tools.http_client"
-local cjson = require "cjson"
-local ssl_fixtures = require "spec.plugins.ssl.fixtures"
+local ssl_fixtures = require "spec.03-plugins.ssl.fixtures"
 
 local STUB_GET_SSL_URL = spec_helper.STUB_GET_SSL_URL
 local STUB_GET_URL = spec_helper.STUB_GET_URL
 local API_URL = spec_helper.API_URL
 
 describe("SSL Plugin", function()
-
+  local proxy_client, admin_client
+  
   setup(function()
-    spec_helper.prepare_db()
-    spec_helper.insert_fixtures {
-      api = {
-        { request_host = "ssl1.com", upstream_url = "http://mockbin.com" },
-        { request_host = "ssl2.com", upstream_url = "http://mockbin.com" },
-        { request_host = "ssl3.com", upstream_url = "http://mockbin.com" },
-        { request_host = "ssl4.com", upstream_url = "http://mockbin.com" },
-      }
-    }
-
-    spec_helper.start_kong()
+    helpers.dao:truncate_tables()
+    assert(helpers.prepare_prefix())
+    
+    assert(helpers.dao.apis:insert {name = "tests-ssl1", request_host = "ssl1.com", upstream_url = "http://mockbin.com"})
+    assert(helpers.dao.apis:insert {name = "tests-ssl2", request_host = "ssl2.com", upstream_url = "http://mockbin.com"})
+    assert(helpers.dao.apis:insert {name = "tests-ssl3", request_host = "ssl3.com", upstream_url = "http://mockbin.com"})
+    assert(helpers.dao.apis:insert {name = "tests-ssl4", request_host = "ssl4.com", upstream_url = "http://mockbin.com"})
+    
+    assert(helpers.start_kong())
+    proxy_client = assert(helpers.http_client("127.0.0.1", helpers.test_conf.proxy_port))
+    admin_client = assert(helpers.http_client("127.0.0.1", helpers.test_conf.admin_port))
 
     -- The SSL plugin needs to be added manually because we are requiring ngx.ssl
-    local _, status = http_client.post_multipart(API_URL.."/apis/ssl1.com/plugins/", { 
-      name = "ssl", 
-      ["config.cert"] = ssl_fixtures.cert, 
-      ["config.key"] = ssl_fixtures.key})
-    assert.equals(201, status)
-
-    local _, status = http_client.post_multipart(API_URL.."/apis/ssl2.com/plugins/", { 
-      name = "ssl", 
-      ["config.cert"] = ssl_fixtures.cert, 
-      ["config.key"] = ssl_fixtures.key,
-      ["config.only_https"] = true})
-    assert.equals(201, status)
-
-    local _, status = http_client.post_multipart(API_URL.."/apis/ssl4.com/plugins/", { 
-      name = "ssl", 
-      ["config.cert"] = ssl_fixtures.cert, 
-      ["config.key"] = ssl_fixtures.key,
-      ["config.only_https"] = true,
-      ["config.accept_http_if_already_terminated"] = true})
-    assert.equals(201, status)
+    local res = assert(admin_client:send {
+      method = "POST",
+      path = "/apis/ssl1.com/plugins/",
+      body = {
+        name = "ssl", 
+        ["config.cert"] = ssl_fixtures.cert, 
+        ["config.key"] = ssl_fixtures.key
+      },
+      headers = {
+        ["Content-Type"] = "multipart/form-data"
+      }
+    })
+    assert.res_status(201, res)
+    
+    res = assert(admin_client:send {
+      method = "POST",
+      path = "/apis/ssl2.com/plugins/",
+      body = {
+        name = "ssl", 
+        ["config.cert"] = ssl_fixtures.cert, 
+        ["config.key"] = ssl_fixtures.key,
+        ["config.only_https"] = true
+      },
+      headers = {
+        ["Content-Type"] = "multipart/form-data"
+      }
+    })
+    assert.res_status(201, res)
+    
+    res = assert(admin_client:send {
+      method = "POST",
+      path = "/apis/ssl4.com/plugins/",
+      body = {
+        name = "ssl", 
+        ["config.cert"] = ssl_fixtures.cert, 
+        ["config.key"] = ssl_fixtures.key,
+        ["config.only_https"] = true,
+        ["config.accept_http_if_already_terminated"] = true
+      },
+      headers = {
+        ["Content-Type"] = "multipart/form-data"
+      }
+    })
+    assert.res_status(201, res)
   end)
 
   teardown(function()
-    spec_helper.stop_kong()
+    if proxy_client then
+      proxy_client:close()
+    end
+    if admin_client then
+      admin_client:close()
+    end
+    helpers.stop_kong()
   end)
 
   describe("SSL conversions", function()
-    it("should not convert an invalid cert to DER", function()
-      local res, status = http_client.post_multipart(API_URL.."/apis/ssl1.com/plugins/", { 
-      name = "ssl", 
-      ["config.cert"] = "asd", 
-      ["config.key"] = ssl_fixtures.key})
-      assert.equals(400, status)
+    it("should not convert an invalid cert to DER #o", function()
+      local res = assert(admin_client:send {
+        method = "POST",
+        path = "/apis/ssl1.com/plugins/",
+        body = {
+          name = "ssl",
+          ["config.cert"] = "asd",
+          ["config.key"] = ssl_fixtures.key
+        },
+        headers = {
+          ["Content-Type"] = "multipart/form-data"
+        }
+      })
+      local body = cjson.decode(assert.res_status(400, res))
       assert.equals("Invalid SSL certificate", cjson.decode(res)["config.cert"])
     end)
     it("should not convert an invalid key to DER", function()
