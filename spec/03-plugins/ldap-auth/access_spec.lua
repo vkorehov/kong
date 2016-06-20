@@ -29,10 +29,10 @@ describe("Plugin: ldap-auth", function()
       api_id = api1.id,
       name = "ldap-auth",
       config = {
-        ldap_host = "ldap.forumsys.com", 
+        ldap_host = "ec2-54-210-29-167.compute-1.amazonaws.com", 
         ldap_port = "389", 
         start_tls = false, 
-        base_dn = "dc=example,dc=com", 
+        base_dn = "ou=scientists,dc=ldap,dc=mashape,dc=com", 
         attribute = "uid"
       }
     })
@@ -41,10 +41,10 @@ describe("Plugin: ldap-auth", function()
       api_id = api2.id,
       name = "ldap-auth",
       config = {
-        ldap_host = "ldap.forumsys.com", 
+        ldap_host = "ec2-54-210-29-167.compute-1.amazonaws.com", 
         ldap_port = "389", 
         start_tls = false, 
-        base_dn = "dc=example,dc=com", 
+        base_dn = "ou=scientists,dc=ldap,dc=mashape,dc=com", 
         attribute = "uid", 
         hide_credentials = true
       }
