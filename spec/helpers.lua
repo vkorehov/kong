@@ -26,6 +26,27 @@ local dao = DAOFactory(conf)
 -----------------
 local resty_http_proxy_mt = {}
 
+-- Case insensitive lookup function, returns the value and the original key. Or if not
+-- found nil and the search key
+-- @usage -- sample usage
+-- local test = { SoMeKeY = 10 }
+-- print(lookup(test, "somekey"))  --> 10, "SoMeKeY"
+-- print(lookup(test, "NotFound")) --> nil, "NotFound"
+local function lookup(t, k)
+  local ok = k
+  if type(k) ~= "string" then
+    return t[k], k
+  else
+    k = k:lower()
+  end
+  for key, value in pairs(t) do
+    if tostring(key):lower() == k then 
+      return value, key
+    end
+  end
+  return nil, ok
+end
+
 function resty_http_proxy_mt:send(opts)
   local cjson = require "cjson"
   local utils = require "kong.tools.utils"
@@ -34,12 +55,36 @@ function resty_http_proxy_mt:send(opts)
 
   -- build body
   local headers = opts.headers or {}
-  local content_type = headers["Content-Type"] or ""
+  local content_type, content_type_name = lookup(headers, "Content-Type")
+  content_type = headers["Content-Type"] or ""
   local t_body_table = type(opts.body) == "table"
   if string.find(content_type, "application/json") and t_body_table then
     opts.body = cjson.encode(opts.body)
   elseif string.find(content_type, "www-form-urlencoded", nil, true) and t_body_table then
     opts.body = utils.encode_args(opts.body, true) -- true: not % encoded
+  elseif string.find(content_type, "multipart/form-data", nil, true) and t_body_table then
+    local form = opts.body
+    local boundary = "8fd84e9444e3946c"
+    local body = ""
+
+    for k, v in pairs(form) do
+      body = body.."--"..boundary.."\r\nContent-Disposition: form-data; name=\""..k.."\"\r\n\r\n"..tostring(v).."\r\n"
+    end
+
+    if body ~= "" then
+      body = body.."--"..boundary.."--\r\n"
+    end
+
+    local clength = lookup(headers, "content-length")
+    if not clength then
+      headers["content-length"] = #body
+    end
+    
+    if not content_type:find("boundary=") then
+      headers[content_type_name] = content_type.."; boundary="..boundary
+    end
+    
+    opts.body = body
   end
 
   -- build querystring (assumes none is currently in 'opts.path')
