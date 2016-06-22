@@ -139,7 +139,6 @@ describe("SSL Plugin", function()
   end)
 
   describe("only_https", function()
-
     it("should block request without https", function()
       local res = assert(proxy_client:send {
         method = "GET",
@@ -149,9 +148,9 @@ describe("SSL Plugin", function()
         }
       })
       local body = cjson.decode(assert.res_status(426, res))
-      assert.are.same("close, Upgrade", res.headers.connection)
+      assert.are.same("Please use HTTPS protocol", body.message)
       assert.are.same("TLS/1.0, HTTP/1.1", res.headers.upgrade)
-      assert.are.same("Please use HTTPS protocol", body)
+      assert.are.same("close, Upgrade", res.headers.connection)
     end)
 
     it("should not block request with https", function()
