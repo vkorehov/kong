@@ -124,7 +124,6 @@ describe("SSL Plugin", function()
   describe("SSL Resolution", function()
     it("should return default CERTIFICATE when requesting other APIs", function()
       local parsed_url = url.parse(STUB_GET_SSL_URL)
-      local inspect = require("inspect")
       local ok, res, output = helpers.execute("(echo \"GET /\"; sleep 2) | openssl s_client -connect "..parsed_url.host..":"..tostring(parsed_url.port).." -servername test4.com")
       
       assert.truthy(output:match("US/ST=California/L=San Francisco/O=Kong/OU=IT Department/CN=localhost"))
@@ -213,12 +212,10 @@ describe("SSL Plugin", function()
     })
     local body = cjson.decode(assert.res_status(200, res))
     local api_id = body.data[1].id
-    print(api_id)
     local kong_working_dir = helpers.test_conf.prefix
     
     local ssl_cert_path = pl_path.join(kong_working_dir, "ssl", "kong-default.crt")
     local ssl_key_path = pl_path.join(kong_working_dir, "ssl", "kong-default.key")
-    print(ssl_cert_path)
     local ok, res, output = helpers.execute("curl -s -o /dev/null -w \"%{http_code}\" "..API_URL.."/apis/"..api_id.."/plugins/ --form \"name=ssl\" --form \"config.cert=@"..ssl_cert_path.."\" --form \"config.key=@"..ssl_key_path.."\"")
     assert.are.equal(201, tonumber(output))
   end)

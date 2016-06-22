@@ -9,24 +9,17 @@ local STUB_GET_SSL_URL = "https://localhost:"..helpers.test_conf.proxy_ssl_port
 local API_URL = "http://localhost:"..helpers.test_conf.admin_port
 
 describe("SSL Hooks", function()
-  local proxy_client, admin_client, proxy_ssl_client
+  local admin_client
   setup(function()
     assert(helpers.prepare_prefix())
     assert(helpers.start_kong())
-    proxy_client = assert(helpers.http_client("127.0.0.1", helpers.test_conf.proxy_port))
     proxy_ssl_client = assert(helpers.http_client("127.0.0.1", helpers.test_conf.proxy_ssl_port))
     admin_client = assert(helpers.http_client("127.0.0.1", helpers.test_conf.admin_port))
   end)
 
   teardown(function()
-    if proxy_client then
-      proxy_client:close()
-    end
     if admin_client then
       admin_client:close()
-    end
-    if proxy_ssl_client then
-      proxy_ssl_client:close()
     end
     helpers.stop_kong()
   end)
