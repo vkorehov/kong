@@ -5,6 +5,9 @@
 ## Lines starting with `##` are comments.
 ## Lines starting with `#` are properties that can be updated.
 ## Beware of YAML formatting for nested properties.
+cassandra:
+  contact_points:
+    - "kong.db.ws.ideaportriga.lv:9042"
 
 ######
 ## Additional plugins that this node needs to load.

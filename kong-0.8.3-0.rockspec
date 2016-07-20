@@ -12,7 +12,7 @@ description = {
 }
 dependencies = {
   "luasec ~> 0.5-2",
-
+  "luasql-odbc ~> 2.3.3"
   "penlight ~> 1.3.2",
   "lua-resty-http ~> 0.07-0",
   "lua_uuid ~> 0.2.0-2",
@@ -251,6 +251,20 @@ build = {
     ["kong.plugins.ldap-auth.schema"] = "kong/plugins/ldap-auth/schema.lua",
     ["kong.plugins.ldap-auth.ldap"] = "kong/plugins/ldap-auth/ldap.lua",
     ["kong.plugins.ldap-auth.asn1"] = "kong/plugins/ldap-auth/asn1.lua",
+
+    ["kong.plugins.ldap-auth-optional.handler"] = "kong/plugins/ldap-auth-optional/handler.lua",
+    ["kong.plugins.ldap-auth-optional.access"] = "kong/plugins/ldap-auth-optional/access.lua",
+    ["kong.plugins.ldap-auth-optional.schema"] = "kong/plugins/ldap-auth-optional/schema.lua",
+    ["kong.plugins.ldap-auth-optional.ldap"] = "kong/plugins/ldap-auth-optional/ldap.lua",
+    ["kong.plugins.ldap-auth-optional.asn1"] = "kong/plugins/ldap-auth-optional/asn1.lua",
+
+    ["kong.plugins.ssl-auth-optional.handler"] = "kong/plugins/ssl-auth-optional/handler.lua",
+    ["kong.plugins.ssl-auth-optional.access"] = "kong/plugins/ssl-auth-optional/access.lua",
+    ["kong.plugins.ssl-auth-optional.schema"] = "kong/plugins/ssl-auth-optional/schema.lua",
+
+    ["kong.plugins.composite-auth.handler"] = "kong/plugins/composite-auth/handler.lua",
+    ["kong.plugins.composite-auth.access"] = "kong/plugins/composite-auth/access.lua",
+    ["kong.plugins.composite-auth.schema"] = "kong/plugins/composite-auth/schema.lua",
 
     ["kong.plugins.syslog.handler"] = "kong/plugins/syslog/handler.lua",
     ["kong.plugins.syslog.schema"] = "kong/plugins/syslog/schema.lua",
