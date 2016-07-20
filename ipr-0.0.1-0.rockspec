@@ -3,7 +3,7 @@ version = "0.0.1-0"
 supported_platforms = {"linux", "macosx"}
 source = {
   url = "git://github.com/vkorehov/kong",
-  tag = "0.0.1-0"
+  tag = "next"
 }
 description = {
   summary = "Idea Port Riga specific kong plugins",
