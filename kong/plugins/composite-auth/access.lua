@@ -22,8 +22,8 @@ function _M.execute(conf)
     if consumer == nil then
       return responses.send_HTTP_FORBIDDEN("Invalid authentication credentials")
     end
-    ngx.header["X-Username"] = consumer.username
-    ngx.header["X-Authenticated-By"] = 'SSL'
+    ngx.req.set_header('X-Username', consumer.username)
+    ngx.req.set_header('X-Authenticated-By', 'SSL')
   else
     ngx.log(ngx.ERR, "SSL Unauthenticated")
   end
@@ -45,8 +45,8 @@ function _M.execute(conf)
     if consumer == nil then
       return responses.send_HTTP_FORBIDDEN("Invalid authentication credentials")
     end
-    ngx.header["X-Username"] = consumer.username
-    ngx.header["X-Authenticated-By"] = 'LDAP'
+    ngx.req.set_header('X-Username', consumer.username)
+    ngx.req.set_header('X-Authenticated-By', 'LDAP')
   else
     ngx.log(ngx.ERR, "LDAP Unauthenticated")
   end
