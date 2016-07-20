@@ -23,6 +23,7 @@ function _M.execute(conf)
       return responses.send_HTTP_FORBIDDEN("Invalid authentication credentials")
     end
     ngx.req.set_header('X-Username', consumer.username)
+    ngx.req.set_header('X-User-ID', consumer.custom_id)
     ngx.req.set_header('X-Authenticated-By', 'SSL')
   else
     ngx.log(ngx.ERR, "SSL Unauthenticated")
@@ -46,6 +47,7 @@ function _M.execute(conf)
       return responses.send_HTTP_FORBIDDEN("Invalid authentication credentials")
     end
     ngx.req.set_header('X-Username', consumer.username)
+    ngx.req.set_header('X-User-ID', consumer.custom_id)
     ngx.req.set_header('X-Authenticated-By', 'LDAP')
   else
     ngx.log(ngx.ERR, "LDAP Unauthenticated")
