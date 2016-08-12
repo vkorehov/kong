@@ -16,6 +16,8 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
+    ["consulclient"] = "kong/consulclient.lua",
+
     ["kong.plugins.ldap-auth-optional.handler"] = "kong/plugins/ldap-auth-optional/handler.lua",
     ["kong.plugins.ldap-auth-optional.access"] = "kong/plugins/ldap-auth-optional/access.lua",
     ["kong.plugins.ldap-auth-optional.schema"] = "kong/plugins/ldap-auth-optional/schema.lua",

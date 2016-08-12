@@ -42,6 +42,7 @@ build = {
   type = "builtin",
   modules = {
     ["kong"] = "kong/kong.lua",
+    ["consulclient"] = "kong/consulclient.lua",
 
     ["classic"] = "kong/vendor/classic.lua",
     ["lapp"] = "kong/vendor/lapp.lua",

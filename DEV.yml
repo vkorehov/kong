@@ -84,6 +84,8 @@ nginx: |
     init_by_lua_block {
       kong = require "kong"
       kong.init()
+      consulclient = require "consulclient"
+      consulclient.init()
     }
 
     init_worker_by_lua_block {
