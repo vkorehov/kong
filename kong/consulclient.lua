@@ -5,4 +5,4 @@ function ConsulClient.init()
   ngx.log(ngx.ERR, "CONSULCLIENT!!!")
 end
 
-return Consulclient
+return ConsulClient
