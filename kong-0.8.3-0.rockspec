@@ -11,10 +11,10 @@ description = {
   license = "MIT"
 }
 dependencies = {
-  "luasec ~> 0.5-2",
+  "luasec ~> 0.6-3",
   "penlight ~> 1.3.2",
   "lua-resty-http ~> 0.07-0",
-  "lua_uuid ~> 0.2.0-2",
+  "lua_uuid ~> 0.2.1-0",
   "lua_system_constants ~> 0.1.2-0",
   "luatz ~> 0.3-1",
   "yaml ~> 1.1.2-1",
@@ -33,8 +33,8 @@ dependencies = {
   "luasocket ~> 2.0.2-6",
   "lrexlib-pcre ~> 2.7.2-1",
   "lua-llthreads2 ~> 0.1.3-1",
-  "luacrypto >= 0.3.2-1",
-  "luasyslog >= 1.0.0-2",
+  "luacrypto >= 0.3.3-0",
+  "luasyslog >= 1.0.1-0",
   "lua_pack ~> 1.0.4-0"
 }
 build = {
