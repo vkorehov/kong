@@ -3,7 +3,7 @@ version = "0.9.0-0"
 supported_platforms = {"linux", "macosx", "mingw32"}
 source = {
   url = "git://github.com/vkorehov/kong",
-  tag = "0.9.0"
+  tag = "next"
 }
 description = {
   summary = "Kong is a scalable and customizable API Management Layer built on top of Nginx.",
