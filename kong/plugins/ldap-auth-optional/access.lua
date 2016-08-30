@@ -1,14 +1,14 @@
 local responses = require "kong.tools.responses"
 local constants = require "kong.constants"
 local cache = require "kong.tools.database_cache"
-local base64 = require "base64"
-local ldap = require "kong.plugins.ldap-auth-optional.ldap"
+local ldap = require "kong.plugins.ldap-auth.ldap"
 
 local match = string.match
 local ngx_log = ngx.log
 local request = ngx.req
 local ngx_error = ngx.ERR
 local ngx_debug = ngx.DEBUG
+local decode_base64 = ngx.decode_base64
 local ngx_socket_tcp = ngx.socket.tcp
 local tostring =  tostring
 
@@ -23,7 +23,7 @@ local function retrieve_credentials(authorization_header_value, conf)
     local cred = match(authorization_header_value, "%s*[ldap|LDAP]%s+(.*)")
 
     if cred ~= nil then
-      local decoded_cred = base64.decode(cred)
+      local decoded_cred = decode_base64(cred)
       username, password = match(decoded_cred, "(.+):(.+)")
     end
   end
@@ -39,7 +39,7 @@ local function ldap_authenticate(given_username, given_password, conf)
   sock:settimeout(conf.timeout)
   ok, error = sock:connect(conf.ldap_host, conf.ldap_port)
   if not ok then
-    ngx_log(ngx_error, "[ldap-auth-optional] failed to connect to "..conf.ldap_host..":"..tostring(conf.ldap_port)..": ", error)
+    ngx_log(ngx_error, "[ldap-auth] failed to connect to "..conf.ldap_host..":"..tostring(conf.ldap_port)..": ", error)
     return responses.send_HTTP_INTERNAL_SERVER_ERROR(error)
   end
 
@@ -58,7 +58,7 @@ local function ldap_authenticate(given_username, given_password, conf)
 
   ok, suppressed_err = sock:setkeepalive(conf.keepalive)
   if not ok then
-    ngx_log(ngx_error, "[ldap-auth-optional] failed to keepalive to "..conf.ldap_host..":"..tostring(conf.ldap_port)..": ", suppressed_err)
+    ngx_log(ngx_error, "[ldap-auth] failed to keepalive to "..conf.ldap_host..":"..tostring(conf.ldap_port)..": ", suppressed_err)
   end
   return is_authenticated, error
 end
@@ -70,7 +70,7 @@ local function authenticate(conf, given_credentials)
   end
 
   local credential = cache.get_or_set(cache.ldap_credential_key(given_username), function()
-    ngx_log(ngx_debug, "[ldap-auth-optional] authenticating user against LDAP server: "..conf.ldap_host..":"..conf.ldap_port)
+    ngx_log(ngx_debug, "[ldap-auth] authenticating user against LDAP server: "..conf.ldap_host..":"..conf.ldap_port)
 
     local ok, err = ldap_authenticate(given_username, given_password, conf)
     if err ~= nil then ngx_log(ngx_error, err) end
@@ -89,8 +89,8 @@ function _M.execute(conf)
 
   -- If both headers are missing, return 401
   if not (authorization_value or proxy_authorization_value) then
-    -- allow other authentication methods to continue
-    return nil
+    ngx.header["WWW-Authenticate"] = 'LDAP realm="kong"'
+    return responses.send_HTTP_UNAUTHORIZED()
   end
 
   local is_authorized, credential = authenticate(conf, proxy_authorization_value)
