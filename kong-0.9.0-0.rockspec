@@ -162,6 +162,11 @@ build = {
     ["kong.plugins.galileo.buffer"] = "kong/plugins/galileo/buffer.lua",
     ["kong.plugins.galileo.alf"] = "kong/plugins/galileo/alf.lua",
 
+    ["kong.plugins.bufferhttp-log.handler"] = "kong/plugins/bufferhttp-log/handler.lua",
+    ["kong.plugins.bufferhttp-log.schema"] = "kong/plugins/bufferhttp-log/schema.lua",
+    ["kong.plugins.bufferhttp-log.buffer"] = "kong/plugins/bufferhttp-log/buffer.lua",
+    ["kong.plugins.bufferhttp-log.alf"] = "kong/plugins/bufferhttp-log/alf.lua",
+
     ["kong.plugins.rate-limiting.migrations.cassandra"] = "kong/plugins/rate-limiting/migrations/cassandra.lua",
     ["kong.plugins.rate-limiting.migrations.postgres"] = "kong/plugins/rate-limiting/migrations/postgres.lua",
     ["kong.plugins.rate-limiting.handler"] = "kong/plugins/rate-limiting/handler.lua",
