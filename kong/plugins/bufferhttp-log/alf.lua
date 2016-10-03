@@ -68,7 +68,7 @@ end
 -- @param[type=string] res_body_str The response body
 -- @treturn table The entry created
 -- @treturn number The new size of the `entries` array
-function _M:add_entry(_ngx, req_body_str, resp_body_str)
+function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   if not self.entries then
     return nil, "no entries table"
   elseif not _ngx then
@@ -77,8 +77,15 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str)
     return nil, "arg #2 (req_body_str) must be a string"
   elseif resp_body_str ~= nil and type(resp_body_str) ~= "string" then
     return nil, "arg #3 (resp_body_str) must be a string"
+  elseif type(conf) ~= "table" then
+    return nil, "arg #4 (conf) must be a table"
   end
 
+  self.log_bodies = conf.log_bodies
+  self.max_msg_size = conf.max_msg_size_mb
+  self.secure_message = conf.secure_message
+  self.secure_patterns = conf.secure_patterns
+	
   -- retrieval
   local var = _ngx.var
   local ctx = _ngx.ctx
