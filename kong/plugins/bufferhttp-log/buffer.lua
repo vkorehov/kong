@@ -220,8 +220,10 @@ end
 function _M.new(conf)
   if type(conf) ~= "table" then
     return nil, "arg #1 (conf) must be a table"
-  elseif conf.log_bodies ~= nil and type(conf.log_bodies) ~= "boolean" then
+  elseif conf.log_bodies ~= nil and type (conf.log_bodies) ~= "boolean" then
     return nil, "log_bodies must be a boolean"
+  elseif conf.secure_message ~= nil and type (conf.secure_message) ~= "boolean" then
+    return nil, "secure_message must be a boolean"
   elseif conf.retry_count ~= nil and type(conf.retry_count) ~= "number" then
     return nil, "retry_count must be a number"
   elseif conf.connection_timeout ~= nil and type(conf.connection_timeout) ~= "number" then
@@ -238,11 +240,13 @@ function _M.new(conf)
     return nil, "queue_size must be a number"
   elseif type(conf.endpoint) ~= "string" then
     return nil, "host must be a string"
-  end
+end
 
   local buffer = {
     endpoint            	= conf.endpoint,
     https_verify        	= conf.https_verify,
+    secure_message          	= conf.secure_message or false,
+    secure_patterns             = conf.secure_patterns,
     log_bodies          	= conf.log_bodies or false,
     retry_count         	= conf.retry_count or 0,
     connection_timeout  	= conf.connection_timeout and conf.connection_timeout * 1000 or 30000, -- ms
@@ -250,7 +254,7 @@ function _M.new(conf)
     queue_size         	    	= conf.queue_size or 1000,
     queue_sizeMB        	= conf.queue_size_mb * 2^20 or 20 * 2^20,  
     max_sending_queue_size  	= conf.max_sending_queue_size_mb * 2^20 or 200 * 2^20,
-    cur_alf              	= alf_serializer.new(conf.log_bodies,conf.max_msg_size_mb),
+    cur_alf              	= alf_serializer.new(conf.log_bodies,conf.max_msg_size_mb,conf.secure_message,conf.secure_patterns),
     sending_queue      	    	= {},                             -- FILO queue
     sending_queue_size 	    	= 0,
     last_t              	= huge,
