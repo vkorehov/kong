@@ -62,7 +62,7 @@ function BufferHTTPHandler:log(conf)
     res_body = ctx.bufferhttp.res_body
   end
 
-  buf:add_entry(ngx, req_body, res_body)
+  buf:add_entry(ngx, req_body, res_body,conf)
 end
 
 return BufferHTTPHandler
