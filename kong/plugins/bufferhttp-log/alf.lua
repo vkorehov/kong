@@ -40,10 +40,12 @@ local _mt = {
   __index = _M
 }
 
-function _M.new(log_bodies,max_msg_size)
+function _M.new(log_bodies,max_msg_size,secure_message,secure_patterns)
   local alf = {
     log_bodies = log_bodies,
     max_msg_size = max_msg_size,
+    secure_message = secure_message,
+    secure_patterns = secure_patterns,
     entries = {}
   }
 
@@ -181,6 +183,29 @@ function _M:serialize()
 --    return nil, "ALF too large (> 20MB)"
 --  end
 
+  if self.secure_message then
+ --for headers
+     local patterns = {}
+ --for body
+     local patterns2 = {}
+ 
+     if self.secure_patterns == nil then
+	patterns = {"(assword\":)\"(.-)\"","(token\":)\"(.-)\""}
+        patterns2 = {"(assword\":)\"(.-)\"","(token\":)\"(.-)\""}
+     else
+	patterns = self.secure_patterns	
+	patterns2 = self.secure_patterns	
+     end
+		
+     for i,v in ipairs(patterns) do
+        json = gsub(json, v, "%1\"*******\"")
+     end
+
+     for i,v in ipairs(patterns2) do
+        json = gsub(json, gsub(v, "\"", "\\\""), "%1\\\"*******\\\"")
+     end
+  end
+	
   return gsub(json, "\\/", "/"), #self.entries
 end
 
