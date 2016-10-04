@@ -193,24 +193,18 @@ function _M:serialize()
   if self.secure_message then
  --for headers
      local patterns = {}
- --for body
-     local patterns2 = {}
  
      if self.secure_patterns == nil then
 	patterns = {"(assword\":)\"(.-)\"","(token\":)\"(.-)\""}
-        patterns2 = {"(assword\":)\"(.-)\"","(token\":)\"(.-)\""}
      else
-	patterns = self.secure_patterns	
-	patterns2 = self.secure_patterns	
+	patterns = self.secure_patterns		
      end
 		
      for i,v in ipairs(patterns) do
         json = gsub(json, v, "%1\"*******\"")
-     end
-
-     for i,v in ipairs(patterns2) do
         json = gsub(json, gsub(v, "\"", "\\\""), "%1\\\"*******\\\"")
      end
+
   end
 	
   return gsub(json, "\\/", "/"), #self.entries
