@@ -8,6 +8,9 @@ local Buffer = require "kong.plugins.bufferhttp-log.buffer"
 
 local read_body = ngx.req.read_body
 local get_body_data = ngx.req.get_body_data
+local req_set_header = ngx.req.set_header
+local req_get_headers = ngx.req.get_headers
+local uuid = require("kong.tools.utils").uuid
 
 local _alf_buffers = {} -- buffers per-api
 
@@ -20,6 +23,12 @@ end
 function BufferHTTPHandler:access(conf)
   BufferHTTPHandler.super.access(self)
 
+  if conf.add_request_id then
+    if not req_get_headers()["request-id"] then
+      req_set_header("request-id", uuid())    
+    end
+  end
+    
   if conf.log_bodies then
     read_body()
     ngx.ctx.bufferhttp = {req_body = get_body_data()}
