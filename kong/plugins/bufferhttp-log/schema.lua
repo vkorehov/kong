@@ -11,6 +11,7 @@ return {
     endpoint = {type = "string", required = true, default = "http://"},
     https_verify = {type = "boolean", default = false},
     secure_message = {type = "boolean", default = false},
+    add_request_id = {type = "boolean", default = true},
     secure_patterns = {type = "array", default = { "(assword\":)\"(.-)\"", "(token\":)\"(.-)\""}},    
   }
 }
