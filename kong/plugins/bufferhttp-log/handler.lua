@@ -24,8 +24,8 @@ function BufferHTTPHandler:access(conf)
   BufferHTTPHandler.super.access(self)
 
   if conf.add_request_id then
-    if not req_get_headers()["request-id"] then
-      req_set_header("request-id", uuid())    
+    if not req_get_headers()["dm_request-id"] then
+      req_set_header("dm_request-id", uuid())    
     end
   end
     
