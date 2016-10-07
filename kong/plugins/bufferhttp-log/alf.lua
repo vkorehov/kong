@@ -129,31 +129,37 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   local request_path = ctx.api.request_path
   
   local idx = #self.entries + 1
+  local isError = "false"
   local now = timestamp.get_utc()
 	
+  if ngx.status >= 400 then
+    isError = 'true'	
+  end
+	
+  request_headers["dm_http_method"]= req_get_method()
+  request_headers["dm_http_method"]= req_get_method()
+  request_headers["dm_http_path"]= request_path
+  request_headers["dm_http_remote_addr"]= ngx.var.remote_addr
+  request_headers["dm_http_content_type"]= request_content_type
+  request_headers["dm_http_status_code"]= ""..ngx.status
+  request_headers["dm_http_content_type"]= resp_content_type
+  request_headers["dm_http_character_enc"]= resp_transfer_encoding
+  request_headers["dm_source"]= "KONG_API"
+  request_headers["event_name"]= "http"
+  request_headers["dm_is_error"]= isError
+	
   self.entries[idx] = {
-    source = "debessmana",
+    source = "KONG_API",
     timestamp = now,
     id = uuid(),
-    name = "KONG_API",
+    name = "http",
     headers = request_headers,
     payload = {
     request = {
-	  metadata = {
-      http_method = req_get_method(),
-      http_path = request_path,	
-      http_remote_add = ngx.var.remote_addr,
-	  http_content_type = request_content_type,
-	  },
     body = post_data,
-    headers = request_headers
+    headers = req_get_headers()
     },
     response = {
-	  metadata = {
-      http_statuc_code = ""..ngx.status,
-      http_content_type = resp_content_type,
-      http_character_enc = resp_transfer_encoding
-	  },
     body = response_content,
     headers = resp_headers
     }},
@@ -162,7 +168,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
       response_size = resp_body_size,
       execution_time = send_t + wait_t + receive_t
     }
-  }
+}
 
 local max_size_mb = self.max_msg_size * 2^20
 
