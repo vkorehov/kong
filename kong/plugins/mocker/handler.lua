@@ -33,7 +33,7 @@ local function send_response(status_code,content, contentTypeJson)
         ngx.say(content)
     end
 
-    return ngx.exit(status_code)
+    ngx.exit(status_code)
 end
 
 function Mocker:new()
