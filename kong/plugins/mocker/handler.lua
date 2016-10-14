@@ -112,7 +112,6 @@ function Mocker:access(conf)
 						if type(val) ~= "table"	and loopHelper == true then
 						  loopHelper = false
 						  queryValue = key.."="..val
-						  ngx.log(ngx.ERR, "TEST 5 "..queryValue,"")
 						  for i = 1, #parsedQueryValue do
 						     mapParamsCount = #parsedQueryValue			
 						     if parsedQueryValue[i] and parsedQueryValue[i] == queryValue then
