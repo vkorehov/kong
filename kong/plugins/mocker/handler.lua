@@ -69,14 +69,18 @@ function Mocker:access(conf)
     local queryParams = req_get_uri_args()
     local url = ngx.ctx.upstream_url
     local pathIndex = url:find('[^/]/[^/]')
-    local path = url:sub(pathIndex + 1)    
+    local path = nil
+
+    if pathIndex then
+      path = url:sub(pathIndex + 1) 	
+    end   
 		
     local mockValue = {}
     local queryNameMAP = {} 
     local queryValueMAP = {}
     local queryValue = ""
     local queryString = ""
-    local mockName = ""
+    local mockName = nil
     local parsedQueryValue = {}	
 		
     local loopHelper = true
