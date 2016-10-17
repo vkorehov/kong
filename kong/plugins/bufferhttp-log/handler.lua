@@ -22,7 +22,7 @@ end
 
 function BufferHTTPHandler:access(conf)
   BufferHTTPHandler.super.access(self)
-  ngx.log(ngx.ERR, "In access ", "")
+  
   if conf.add_request_id then
     if not req_get_headers()["dm_request-id"] then
       req_set_header("dm_request-id", uuid())    
@@ -37,7 +37,7 @@ end
 
 function BufferHTTPHandler:body_filter(conf)
   BufferHTTPHandler.super.body_filter(self)
-  ngx.log(ngx.ERR, "In body filter ", "")
+  
   if conf.log_bodies then
     local chunk = ngx.arg[1]
     local ctx = ngx.ctx
@@ -47,14 +47,9 @@ function BufferHTTPHandler:body_filter(conf)
   end
 end
 
-function BufferHTTPHandler:header_filter()
-  BufferHTTPHandler.super.header_filter(self, "bufferhttp-log")
-    ngx.log(ngx.ERR, "In header filter ", "")
-end
-
 function BufferHTTPHandler:log(conf)
   BufferHTTPHandler.super.log(self)
-  ngx.log(ngx.ERR, "In log ", "")
+  
   local ctx = ngx.ctx
   local api_id = ctx.api.id
 
