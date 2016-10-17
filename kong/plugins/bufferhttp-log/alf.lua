@@ -167,7 +167,10 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
       request_size = req_body_size,
       response_size = resp_body_size,
       execution_time = send_t + wait_t,
-      client_response_time = send_t + wait_t + receive_t
+      client_response_time = send_t + wait_t + receive_t,
+      send_t = send_t,
+      wait_t = wait_t,
+      receive_t = receive_t
     }
 }
 
