@@ -47,6 +47,11 @@ function BufferHTTPHandler:body_filter(conf)
   end
 end
 
+function BufferHTTPHandler:header_filter()
+  BufferHTTPHandler.super.header_filter(self, "bufferhttp-log")
+    ngx.log(ngx.ERR, "In header filter ", "")
+end
+
 function BufferHTTPHandler:log(conf)
   BufferHTTPHandler.super.log(self)
   ngx.log(ngx.ERR, "In log ", "")
