@@ -30,8 +30,6 @@ end
 -- implementation that needs to be upgraded.
 function Serf:invoke_signal(signal, args, no_rpc)
   ngx.log(ngx.ERR, "IN INVOKE SIGNAL 1", "")
-  ngx.sleep(0.5)
-  ngx.log(ngx.ERR, "IN INVOKE SIGNAL 2", "")
   args = args or {}
   if type(args) == "table" then
     setmetatable(args, Serf.args_mt)
