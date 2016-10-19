@@ -6,9 +6,15 @@ local pl_utils = require "pl.utils"
 local pl_file = require "pl.file"
 local cjson = require "cjson.safe"
 local log = require "kong.cmd.utils.log"
+local socker = require "socket"
 
 local Serf = {}
 Serf.__index = Serf
+
+-- custom function, if problems = delete it
+function sleep(sec)
+    socket.select(nil, nil, sec)
+end
 
 Serf.args_mt = {
   __tostring = function(t)
@@ -30,6 +36,7 @@ end
 -- implementation that needs to be upgraded.
 function Serf:invoke_signal(signal, args, no_rpc)
   ngx.log(ngx.ERR, "IN INVOKE SIGNAL 1", "")
+  sleep(0.5)
   args = args or {}
   if type(args) == "table" then
     setmetatable(args, Serf.args_mt)
