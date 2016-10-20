@@ -35,7 +35,11 @@ end
 -- WARN: BAD, this is **blocking** IO. Legacy code from previous Serf
 -- implementation that needs to be upgraded.
 function Serf:invoke_signal(signal, args, no_rpc)
-  sleep(0.5)
+  
+  if self.config.serf_sleep_time then
+    sleep(tonumber(self.config.serf_sleep_time))
+  end
+    
   args = args or {}
   if type(args) == "table" then
     setmetatable(args, Serf.args_mt)
