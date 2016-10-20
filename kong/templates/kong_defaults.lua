@@ -15,6 +15,8 @@ ssl = on
 ssl_cert = NONE
 ssl_cert_key = NONE
 
+serf_sleep_time = 0.1
+
 database = postgres
 pg_host = 127.0.0.1
 pg_port = 5432
