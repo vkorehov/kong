@@ -55,6 +55,8 @@ local CONF_INFERENCES = {
   cluster_listen_rpc = {typ = "string"},
   cluster_advertise = {typ = "string"},
   nginx_worker_processes = {typ = "string"},
+  
+  serf_sleep_time = {typ = "number"},
 
   database = {enum = {"postgres", "cassandra"}},
   pg_port = {typ = "number"},
