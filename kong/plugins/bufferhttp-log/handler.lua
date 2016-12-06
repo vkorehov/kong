@@ -28,23 +28,25 @@ function BufferHTTPHandler:access(conf)
       req_set_header("dm_request-id", uuid())    
     end
   end
-    
-  if conf.log_bodies then
+  
+  --Commented due incorrect metrics request size value  
+  --if conf.log_bodies then
     read_body()
     ngx.ctx.bufferhttp = {req_body = get_body_data()}
-  end
+  --end
 end
 
 function BufferHTTPHandler:body_filter(conf)
   BufferHTTPHandler.super.body_filter(self)
-
-  if conf.log_bodies then
+  
+  --Commented due incorrect metrics request size value  
+  --if conf.log_bodies then
     local chunk = ngx.arg[1]
     local ctx = ngx.ctx
     local res_body = ctx.bufferhttp and ctx.bufferhttp.res_body or ""
     res_body = res_body .. (chunk or "")
     ctx.bufferhttp.res_body = res_body
-  end
+  --end
 end
 
 function BufferHTTPHandler:log(conf)
