@@ -111,14 +111,20 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   local req_body_size = tonumber(request_content_len)
   local resp_body_size = tonumber(resp_content_len)
 
+  if req_body_str then
+    req_body_size = #req_body_str
+  end
+
+  if resp_body_str then
+    resp_body_size = #resp_body_str
+  end
+	
   if self.log_bodies then
     if req_body_str then
-      req_body_size = #req_body_str
       post_data = req_body_str
     end
 
     if resp_body_str then
-      resp_body_size = #resp_body_str
       response_content = resp_body_str
     end
   end
