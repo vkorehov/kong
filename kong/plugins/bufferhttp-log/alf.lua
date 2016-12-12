@@ -165,6 +165,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   request_headers["event_name"]= "http"
   request_headers["dm_is_error"]= isError
   request_headers["dm_is_timeout"]= isTimeOut
+  request_headers["dm_upstream_url"]= ngx.var.upstream_host	
 	
   self.entries[idx] = {
     source = "KONG_API",
