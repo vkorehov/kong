@@ -9,7 +9,11 @@ end
 
 function OAuthHandler:access(conf)
   OAuthHandler.super.access(self)
-  access.execute(conf)
+  if ngx.req.get_method() == "GET" and conf.ignore_patern ~= nil and ngx.re.match(ngx.var.request_uri, conf.ignore_patern) then
+    --ngx.log(ngx.ERR, "IJNIINIININNNNIN: "..ngx.var.request_uri, "")   
+  else
+    access.execute(conf)
+end
 end
 
 OAuthHandler.PRIORITY = 1000
