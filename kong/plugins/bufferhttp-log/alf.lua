@@ -40,9 +40,11 @@ local _mt = {
   __index = _M
 }
 
-function _M.new(log_bodies,max_msg_size,secure_message,secure_patterns,default_app_key)
+function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure_message,secure_patterns,default_app_key)
   local alf = {
-    log_bodies = log_bodies,
+    log_request = log_request,
+    log_response = log_response,
+    log_oauth2_response = log_oauth2_response,
     max_msg_size = max_msg_size,
     secure_message = secure_message,
     secure_patterns = secure_patterns,
@@ -82,7 +84,9 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     return nil, "arg #4 (conf) must be a table"
   end
 
-  self.log_bodies = conf.log_bodies
+  self.log_request = conf.log_request
+  self.log_response = conf.log_response
+  self.log_oauth2_response = conf.log_oauth2_response
   self.max_msg_size = conf.max_msg_size_mb
   self.secure_message = conf.secure_message
   self.secure_patterns = conf.secure_patterns
@@ -108,25 +112,30 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   -- stick to what the request really contains, since it was
   -- already read anyways.
   local post_data, response_content
+  local isOauth2 = "false"
   local req_body_size = tonumber(request_content_len)
   local resp_body_size = tonumber(resp_content_len)
 
+  if ngx.re.match(ngx.var.request_uri, "/oauth2/token") then
+    isOauth2 = "true"		
+  end
+	
   if req_body_str then
     req_body_size = #req_body_str
+		
+    if self.log_request then
+      post_data = req_body_str		
+    end
   end
 
   if resp_body_str then
     resp_body_size = #resp_body_str
-  end
-	
-  if self.log_bodies then
-    if req_body_str then
-      post_data = req_body_str
-    end
-
-    if resp_body_str then
+		
+    if self.log_response then
       response_content = resp_body_str
-    end
+    elseif self.log_oauth2_response and isOauth2 == "true" then
+      response_content = resp_body_str
+    end		
   end
 
   -- timings
@@ -165,6 +174,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   request_headers["event_name"]= "http"
   request_headers["dm_is_error"]= isError
   request_headers["dm_is_timeout"]= isTimeOut
+  request_headers["dm_oauth2_message"]= isOauth2 
   request_headers["dm_upstream_url"]= ngx.var.upstream_host	
 	
   self.entries[idx] = {
