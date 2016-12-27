@@ -107,11 +107,12 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   local resp_content_type = get_header(resp_headers, "content-type",
                             "application/octet-stream")
 
-
+  local request_auth2_credetionals = get_header(request_headers, "authorization") 
+	
   -- request.postData. we don't check has_body here, but rather
   -- stick to what the request really contains, since it was
   -- already read anyways.
-  local post_data, response_content
+  local post_data, response_content, response_token
   local isOauth2 = "false"
   local req_body_size = tonumber(request_content_len)
   local resp_body_size = tonumber(resp_content_len)
@@ -133,8 +134,29 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
 		
     if self.log_response then
       response_content = resp_body_str
-    elseif self.log_oauth2_response and isOauth2 == "true" then
+    end
+		
+    if self.log_oauth2_response and isOauth2 == "true" then
       response_content = resp_body_str
+			
+      if request_auth2_credetionals then
+	request_auth2_credetionals = string.gsub(request_auth2_credetionals, "Basic", "")
+	request_auth2_credetionals = request_auth2_credetionals:gsub("%s+", "")
+	
+	if request_auth2_credetionals then
+	  request_auth2_credetionals = string.match(ngx.decode_base64(request_auth2_credetionals), "(.*)%:")
+	  request_headers["dm_identify"]= request_auth2_credetionals
+        end
+				
+      end
+      
+      response_token = string.match(response_content, "access_token\":(.*)%\",")
+	
+      if response_token then
+	response_token = response_token:gsub("%s+", "")
+	response_token = response_token:gsub("%\"+", "")
+	request_headers["dm_auth2_token"]= response_token
+      end
     end		
   end
 
