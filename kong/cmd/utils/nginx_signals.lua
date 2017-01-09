@@ -20,12 +20,6 @@ local function is_openresty(bin_path)
   log.debug("%s: '%s'", cmd, stderr:sub(1, -2))
   if ok and stderr then
     local version_match = stderr:match(nginx_version_pattern)
-    if not version_match or not nginx_compatible:matches(version_match) then
-      log.verbose("incompatible OpenResty found at %s. Kong requires version"..
-                  " %s, got %s", bin_path, tostring(nginx_compatible),
-                  version_match)
-      return false
-    end
     return true
   end
   log.debug("OpenResty 'nginx' executable not found at %s", bin_path)

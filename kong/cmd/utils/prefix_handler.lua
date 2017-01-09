@@ -61,12 +61,6 @@ local function is_openresty(bin_path)
   log.debug("%s: '%s'", cmd, stderr)
   if ok and stderr then
     local version_match = stderr:match(resty_version_pattern)
-    if not version_match or not resty_compatible:matches(version_match) then
-      log.verbose("'resty' found at %s uses incompatible OpenResty. Kong "..
-                  "requires OpenResty version %s, got %s", bin_path,
-                  tostring(resty_compatible), version_match)
-      return false
-    end
     return true
   end
   log.debug("OpenResty 'resty' executable not found at %s", bin_path)
