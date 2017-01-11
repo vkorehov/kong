@@ -5,7 +5,7 @@
 -- See https://github.com/Mashape/kong/issues/1523
 for _, namespace in ipairs({"cassandra", "pgmoon"}) do
   local socket = require(namespace .. ".socket")
-  socket.force_luasocket(ngx.get_phase(), true)
+--  socket.force_luasocket(ngx.get_phase(), true)
 end
 
 require("kong.cmd.init")(arg)

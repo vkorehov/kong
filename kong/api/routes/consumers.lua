@@ -31,5 +31,11 @@ return {
     DELETE = function(self, dao_factory)
       crud.delete(self.consumer, dao_factory.consumers)
     end
-  }
+  },
+  ["/consumers/role/:roles"] = {
+     GET = function(self, dao_factory)
+       crud.paginated_set(self, dao_factory.consumers)
+     end
+  },
+
 }

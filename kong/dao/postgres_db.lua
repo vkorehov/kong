@@ -98,7 +98,18 @@ local function get_where(tbl)
                         escape_identifier(col),
                         escape_literal(value))
   end
+  return table.concat(where, " AND ")
+end
 
+local function get_where_like(tbl)
+  local where = {}
+
+  for col, value in pairs(tbl) do
+    where[#where + 1] = string.format("%s LIKE %s",
+                        escape_identifier(col),
+                        escape_literal("%"..value.."%"))
+  end
+  --ngx.log(ngx.OK, "WHERE ", table.concat(where, " AND "))
   return table.concat(where, " AND ")
 end
 
@@ -365,7 +376,7 @@ function PostgresDB:find_page(table_name, tbl, page, page_size, schema)
   if page == nil then
     page = 1
   end
-
+ 
   local total_count, err = self:count(table_name, tbl, schema)
   if err then
     return nil, err
@@ -376,7 +387,11 @@ function PostgresDB:find_page(table_name, tbl, page, page_size, schema)
 
   local where
   if tbl ~= nil then
-    where = get_where(tbl)
+    if tbl.roles ~= nil then
+       where = get_where_like(tbl)
+    else
+       where = get_where(tbl)
+	end
   end
 
   local query = self:get_select_query(get_select_fields(schema), schema, table_name, where, offset, page_size)
@@ -392,7 +407,11 @@ end
 function PostgresDB:count(table_name, tbl, schema)
   local where
   if tbl ~= nil then
-    where = get_where(tbl)
+    if tbl.roles ~= nil then
+       where = get_where_like(tbl)
+    else
+       where = get_where(tbl)
+	end
   end
 
   local query = self:get_select_query("COUNT(*)", schema, table_name, where)

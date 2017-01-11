@@ -142,6 +142,13 @@ build = {
     ["kong.plugins.tcp-log.handler"] = "kong/plugins/tcp-log/handler.lua",
     ["kong.plugins.tcp-log.schema"] = "kong/plugins/tcp-log/schema.lua",
 
+	["kong.plugins.mocker.handler"] = "kong/plugins/mocker/handler.lua",
+    ["kong.plugins.mocker.schema"] = "kong/plugins/mocker/schema.lua",
+
+	["kong.plugins.dynamic-upstream.handler"] = "kong/plugins/dynamic-upstream/handler.lua",
+    ["kong.plugins.dynamic-upstream.access"] = "kong/plugins/dynamic-upstream/access.lua",
+    ["kong.plugins.dynamic-upstream.schema"] = "kong/plugins/dynamic-upstream/schema.lua",
+
     ["kong.plugins.udp-log.handler"] = "kong/plugins/udp-log/handler.lua",
     ["kong.plugins.udp-log.schema"] = "kong/plugins/udp-log/schema.lua",
 
