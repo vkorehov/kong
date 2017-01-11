@@ -8,7 +8,6 @@ return {
         consumer_id uuid REFERENCES consumers (id) ON DELETE CASCADE,
         client_id text UNIQUE,
         client_secret text UNIQUE,
-        scope text,
         redirect_uri text,
         created_at timestamp without time zone default (CURRENT_TIMESTAMP(0) at time zone 'utc'),
         PRIMARY KEY (id)
