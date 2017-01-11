@@ -470,10 +470,13 @@ function _M.execute(conf)
     return result
   end)
 
+  --ngx.log(ngx.ERR, "==============================MP_LOG:"..consumer.roles, "")  
+
   ngx.req.set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   ngx.req.set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
   ngx.req.set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
   ngx.req.set_header("x-authenticated-scope", token.scope)
+  ngx.req.set_header("x-consumer-roles", consumer.roles)
   ngx.req.set_header("x-authenticated-userid", token.authenticated_userid)
   ngx.ctx.authenticated_credential = credential
   ngx.ctx.authenticated_consumer = consumer

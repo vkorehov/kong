@@ -36,10 +36,11 @@ local OAUTH2_CREDENTIALS_SCHEMA = {
     client_id = { type = "string", required = false, unique = true, func = generate_if_missing },
     client_secret = { type = "string", required = false, unique = true, func = generate_if_missing },
     redirect_uri = { type = "array", required = true, func = validate_uris },
+    scope = {type="string",required = false},
     created_at = { type = "timestamp", immutable = true, dao_insert_value = true }
   },
   marshall_event = function(self, t)
-    return { id = t.id, consumer_id = t.consumer_id, client_id = t.client_id }
+    return { id = t.id, consumer_id = t.consumer_id, client_id = t.client_id, scopes = scope }
   end
 }
 

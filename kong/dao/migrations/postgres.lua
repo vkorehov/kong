@@ -31,9 +31,6 @@ return {
           CREATE INDEX username_idx ON consumers((lower(username)));
         END IF;
       END$$;
-
-
-
       CREATE TABLE IF NOT EXISTS apis(
         id uuid PRIMARY KEY,
         name text UNIQUE,
@@ -86,6 +83,20 @@ return {
       DROP TABLE consumers;
       DROP TABLE apis;
       DROP TABLE plugins;
+    ]]
+  },
+  {
+     name = "2017-01-11-110500_alter_consumer_schema",
+     up = [[
+        DO $$
+        BEGIN
+            IF exists(SELECT column_name FROM information_schema.columns WHERE table_name='consumers' and column_name='roles' LIMIT 1)=FALSE  THEN
+	      ALTER TABLE consumers ADD COLUMN roles text;	
+   	    END IF;   
+        END$$;
+      ]],
+     down = [[
+        ALTER TABLE consumers DROP COLUMN roles;
     ]]
   },
   {
