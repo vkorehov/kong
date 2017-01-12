@@ -59,7 +59,20 @@ local function generate_token(conf, credential, authenticated_userid, scope, sta
   if err then
     return responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
   end
-
+  
+  -- Retrive the consumer from the credential
+  local consumer = cache.get_or_set(cache.consumer_key(credential.consumer_id), function()
+    local result, err = singletons.dao.consumers:find {id = credential.consumer_id}
+    if err then
+      return responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
+    end
+    return result
+  end)
+  --ngx.log(ngx.ERR, "==============================>>roles:"..consumer.roles)
+  if consumer ~= nil then
+    ngx.header["x-consumer-roles"] = consumer.roles
+  end
+  
   return {
     access_token = token.access_token,
     token_type = "bearer",
