@@ -198,6 +198,8 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   request_headers["dm_is_timeout"]= isTimeOut
   request_headers["dm_oauth2_message"]= isOauth2 
   request_headers["dm_upstream_url"]= ngx.var.upstream_host	
+  request_headers["dm_service_instance"]= ngx.var.upstream_addr
+  request_headers["dm_api_name"]=ngx.ctx.api.name 
 	
   self.entries[idx] = {
     source = "KONG_API",
@@ -206,21 +208,21 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     name = "http",
     headers = request_headers,
     payload = {
-    request = {
-    body = post_data,
-    headers = req_get_headers()
-    },
-    response = {
-    body = response_content,
-    headers = resp_headers
-    }},
-    metrics = {
-      request_size = req_body_size,
-      response_size = resp_body_size,
-      execution_time = wait_t,
-      client_response_time = receive_t,
-      self_execution_time = send_t
-    }
+      request = {
+        body = post_data,
+        headers = req_get_headers()
+      },
+      response = {
+        body = response_content,
+        headers = resp_headers
+      }},
+      metrics = {
+        request_size = req_body_size,
+        response_size = resp_body_size,
+        execution_time = wait_t,
+        client_response_time = receive_t,
+        self_execution_time = send_t
+      }
 }
 
 local max_size_mb = self.max_msg_size * 2^20
