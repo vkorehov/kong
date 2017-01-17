@@ -197,7 +197,8 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   request_headers["dm_is_error"]= isError
   request_headers["dm_is_timeout"]= isTimeOut
   request_headers["dm_oauth2_message"]= isOauth2 
-  request_headers["dm_upstream_url"]= ngx.var.upstream_host	
+  request_headers["dm_upstream_url"]= ngx.ctx.api.upstream_url	
+  request_headers["dm_request_uri"]= ngx.var.request_uri
   request_headers["dm_service_instance"]= ngx.var.upstream_addr
   request_headers["dm_api_name"]=ngx.ctx.api.name 
 	
