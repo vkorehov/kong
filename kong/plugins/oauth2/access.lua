@@ -41,7 +41,8 @@ local TOKEN_URL = "^%s/oauth2/token(/?(\\?[^\\s]*)?)$"
 
 local function generate_token(conf, credential, authenticated_userid, scope, state, expiration, disable_refresh)
   local token_expiration = expiration or conf.token_expiration
-  
+ 
+  local tenant
   local refresh_token
   if not disable_refresh and token_expiration > 0 then
     refresh_token = utils.random_string()
