@@ -71,8 +71,8 @@ local function generate_token(conf, credential, authenticated_userid, scope, sta
     authenticated_userid = authenticated_userid,
     expires_in = token_expiration,
     refresh_token = refresh_token,
-    scope = scope
-    --tenant = tenant  
+    scope = scope,
+    tenant = tenant  
   }, {ttl = token_expiration > 0 and 1209600 or nil}) -- Access tokens (and their associated refresh token) are being
                                                       -- permanently deleted after 14 days (1209600 seconds)
 
