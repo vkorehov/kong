@@ -496,6 +496,10 @@ function _M.execute(conf)
     return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid scope", error_description = "The access token scope is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_scope" error_description="The token scop is invalid or is empty"'})  
   end
   
+  local tenant_is_found = false
+  if(conf~=nil and table.getn(conf.tenants)>0 and isEmpty(token.tenant)==true ) then
+    return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid tenant", error_description = "The tenant is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_tenant" error_description="The tenant is invalid or is empty"'})  
+  end
   
   if table.getn(conf.scopes)>0 and isEmpty(token.scope)==false then
      local token_scopes = split(token.scope,",")
@@ -510,12 +514,23 @@ function _M.execute(conf)
         end
      end
   end
+
+  if table.getn(conf.tenants)>0 and isEmpty(token.tenant)==false then    
+     for key,api_tenant in pairs(conf.tenants) do 
+        if(api_tenant==token.tenant) then 
+          tenant_is_found=true
+        end
+     end
+  end
   
   --ngx.log(ngx.ERR, "==============================scope_is_found :"..tostring(scope_is_found))  
   if(scope_is_found==false ) then
     return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid scope", error_description = "The access token scope is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_scope" error_description="The token scop is invalid or is empty"'})  
   end
-  
+
+  if(tenant_is_found==false ) then
+    return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid tenant", error_description = "The tenant is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_tenant" error_description="The tenant is invalid or is empty"'})  
+  end
 
   ngx.req.set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   ngx.req.set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
