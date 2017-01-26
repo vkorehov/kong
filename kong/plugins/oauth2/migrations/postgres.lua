@@ -82,6 +82,7 @@ return {
       DROP TABLE oauth2_tokens;
     ]]
   },
+  {
      name = "2017-01-25-140300_alter_oauth2_tokens_schema",
      up = [[
         DO $$
