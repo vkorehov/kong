@@ -497,7 +497,7 @@ function _M.execute(conf)
   end
   
   local tenant_is_found = false
-  if(conf~=nil and table.getn(conf.tenants)>0 and isEmpty(token.tenant)==true ) then
+  if(conf~=nil and conf.tenants~=nil and table.getn(conf.tenants)>0 and isEmpty(token.tenant)==true ) then
     return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid tenant", error_description = "The tenant is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_tenant" error_description="The tenant is invalid or is empty"'})  
   end
   
@@ -515,12 +515,14 @@ function _M.execute(conf)
      end
   end
 
-  if table.getn(conf.tenants)>0 and isEmpty(token.tenant)==false then    
+  if conf.tenants ~= nil and table.getn(conf.tenants)>0 and isEmpty(token.tenant)==false then    
      for key,api_tenant in pairs(conf.tenants) do 
         if(api_tenant==token.tenant) then 
           tenant_is_found=true
         end
      end
+  else
+    tenant_is_found=true
   end
   
   --ngx.log(ngx.ERR, "==============================scope_is_found :"..tostring(scope_is_found))  
