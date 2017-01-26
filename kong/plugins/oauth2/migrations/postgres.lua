@@ -83,6 +83,16 @@ return {
     ]]
   },
   {
+    name = "2016-07-15-oauth2_code_credential_id",
+    up = [[
+      DELETE FROM oauth2_authorization_codes;
+      ALTER TABLE oauth2_authorization_codes ADD COLUMN credential_id uuid REFERENCES oauth2_credentials (id) ON DELETE CASCADE;
+    ]],
+    down = [[
+      ALTER TABLE oauth2_authorization_codes DROP COLUMN credential_id;
+    ]]
+  },
+  {
      name = "2017-01-25-140300_alter_oauth2_tokens_schema",
      up = [[
         DO $$
@@ -94,16 +104,6 @@ return {
       ]],
      down = [[
         ALTER TABLE oauth2_tokens DROP COLUMN tenant;
-    ]]
-  },
-  {
-    name = "2016-07-15-oauth2_code_credential_id",
-    up = [[
-      DELETE FROM oauth2_authorization_codes;
-      ALTER TABLE oauth2_authorization_codes ADD COLUMN credential_id uuid REFERENCES oauth2_credentials (id) ON DELETE CASCADE;
-    ]],
-    down = [[
-      ALTER TABLE oauth2_authorization_codes DROP COLUMN credential_id;
     ]]
   }
 }
