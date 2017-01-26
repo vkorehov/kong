@@ -492,7 +492,7 @@ function _M.execute(conf)
   
   
   local scope_is_found = false
-  if(conf~=nil and table.getn(conf.scopes)>0 and isEmpty(token.scope)==true ) then
+  if(conf~=nil and conf.scopes~=nil and table.getn(conf.scopes)>0 and isEmpty(token.scope)==true ) then
     return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid scope", error_description = "The access token scope is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_scope" error_description="The token scop is invalid or is empty"'})  
   end
   
@@ -501,7 +501,7 @@ function _M.execute(conf)
     return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid tenant", error_description = "The tenant is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_tenant" error_description="The tenant is invalid or is empty"'})  
   end
   
-  if table.getn(conf.scopes)>0 and isEmpty(token.scope)==false then
+  if conf.scopes~=nil and table.getn(conf.scopes)>0 and isEmpty(token.scope)==false then
      local token_scopes = split(token.scope,",")
      
      for key,api_scope in pairs(conf.scopes) do 
