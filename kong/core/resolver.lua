@@ -82,6 +82,7 @@ function _M.load_apis_in_memory()
 end
 
 function _M.find_api_by_request_host(req_headers, apis_dics)
+  ngx.log(ngx.ERR, "In find_api_by_request_host", "")
   local hosts_list = {}
   for _, header_name in ipairs({"Host", constants.HEADERS.HOST_OVERRIDE}) do
     local hosts = req_headers[header_name]
@@ -126,6 +127,7 @@ end
 -- @param  `uri` The URI for this request.
 -- @param  `request_path_arr`    An array of all APIs that have a request_path property.
 function _M.find_api_by_request_path(uri, request_path_arr)
+  ngx.log(ngx.ERR, "In find_api_by_request_path", "")
   if uri:sub(-1) ~= "/" then
     uri = uri.."/"
   end
@@ -170,6 +172,7 @@ end
 -- @return `hosts`        The list of headers values found in Host and X-Host-Override.
 -- @return `strip_request_path_pattern` If the API was retrieved by request_path, contain the pattern to strip it from the URI.
 local function find_api(uri, headers)
+  ngx.log(ngx.ERR, "In find_api with uri:"..tostring(uri), "")
   local api, matched_host, hosts_list, strip_request_path_pattern
 
   -- Retrieve all APIs
@@ -199,6 +202,7 @@ end
 
 function _M.execute(request_uri, request_headers)
   local uri = request_uri:match("^([^%?]+)")  -- grab everything before "?"
+  ngx.log(ngx.ERR, "In execute:"..tostring(uri), "")
   local err, api, matched_host, hosts_list, strip_request_path_pattern = find_api(uri, request_headers)
   if err then
     return responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
