@@ -129,7 +129,10 @@ _send = function(premature, self, to_send)
   client:set_timeout(self.connection_timeout)
   
   local parsed_url = parse_url(self.endpoint)
-  
+  -- delete
+  log(ERR, "Host: "..tostring(parsed_url.host)..": ", "") 
+  log(ERR, "Port: "..tostring(parsed_url.port)..": ", "") 
+	
   local ok, err = client:connect(parsed_url.host, parsed_url.port)
   if not ok then
     retry = true
@@ -312,7 +315,8 @@ function _M:flush()
   end
 
   log(DEBUG, "flushing ALF for sending (", err, " entries)")
-
+  -- delete
+  log(ERR, "Error "..tostring(alf_json)..": ", "") 
   self.sending_queue_size = self.sending_queue_size + #alf_json
   self.sending_queue[#self.sending_queue+1] = {
     payload = alf_json,
