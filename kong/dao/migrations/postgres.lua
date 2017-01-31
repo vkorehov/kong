@@ -100,6 +100,20 @@ return {
     ]]
   },
   {
+     name = "2017-01-25-140300_alter_consumer_schema",
+     up = [[
+        DO $$
+        BEGIN
+            IF exists(SELECT column_name FROM information_schema.columns WHERE table_name='consumers' and column_name='tenant' LIMIT 1)=FALSE  THEN
+	      ALTER TABLE consumers ADD COLUMN tenant text;	
+   	    END IF;   
+        END$$;
+      ]],
+     down = [[
+        ALTER TABLE consumers DROP COLUMN tenant;
+    ]]
+  },
+  {
     name = "2015-11-23-817313_nodes",
     up = [[
       CREATE TABLE IF NOT EXISTS nodes(

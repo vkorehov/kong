@@ -41,25 +41,45 @@ local TOKEN_URL = "^%s/oauth2/token(/?(\\?[^\\s]*)?)$"
 
 local function generate_token(conf, credential, authenticated_userid, scope, state, expiration, disable_refresh)
   local token_expiration = expiration or conf.token_expiration
-
+ 
+  local tenant
   local refresh_token
   if not disable_refresh and token_expiration > 0 then
     refresh_token = utils.random_string()
   end
-
+  
+   -- Retrive the consumer from the credential
+  local consumer = cache.get_or_set(cache.consumer_key(credential.consumer_id), function()
+    local result, err = singletons.dao.consumers:find {id = credential.consumer_id}
+    if err then
+      return responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
+    end
+    return result
+  end)
+  
+  
+  if consumer ~= nil then
+    ngx.header["x-consumer-roles"] = consumer.roles
+    ngx.header["x-consumer-tenant"] = consumer.tenant
+    -- overrrides passed scopes with roles stored on customer
+    scope = consumer.roles
+    tenant = consumer.tenant
+  end
+  
   local token, err = singletons.dao.oauth2_tokens:insert({
     credential_id = credential.id,
     authenticated_userid = authenticated_userid,
     expires_in = token_expiration,
     refresh_token = refresh_token,
-    scope = scope
+    scope = scope,
+    tenant = tenant  
   }, {ttl = token_expiration > 0 and 1209600 or nil}) -- Access tokens (and their associated refresh token) are being
                                                       -- permanently deleted after 14 days (1209600 seconds)
 
   if err then
     return responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
   end
-
+  
   return {
     access_token = token.access_token,
     token_type = "bearer",
@@ -469,17 +489,77 @@ function _M.execute(conf)
     end
     return result
   end)
+  
+  
+  local scope_is_found = false
+  if(conf~=nil and conf.scopes~=nil and table.getn(conf.scopes)>0 and isEmpty(token.scope)==true ) then
+    return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid scope", error_description = "The access token scope is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_scope" error_description="The token scop is invalid or is empty"'})  
+  end
+  
+  local tenant_is_found = false
+  if(conf~=nil and conf.tenants~=nil and table.getn(conf.tenants)>0 and isEmpty(token.tenant)==true ) then
+    return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid tenant", error_description = "The tenant is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_tenant" error_description="The tenant is invalid or is empty"'})  
+  end
+  
+  if conf.scopes~=nil and table.getn(conf.scopes)>0 and isEmpty(token.scope)==false then
+     local token_scopes = split(token.scope,",")
+     
+     for key,api_scope in pairs(conf.scopes) do 
+        --ngx.log(ngx.ERR, "==============================api_scope :"..tostring(api_scope))  
+        for key,token_scope in pairs(token_scopes) do 
+          --ngx.log(ngx.ERR, "--------------------------------------token_scope :"..tostring(token_scope))
+          if(api_scope==token_scope) then 
+            scope_is_found=true
+          end
+        end
+     end
+  end
 
-  --ngx.log(ngx.ERR, "==============================MP_LOG:"..consumer.roles, "")  
+  if conf.tenants ~= nil and table.getn(conf.tenants)>0 and isEmpty(token.tenant)==false then    
+     for key,api_tenant in pairs(conf.tenants) do 
+        if(api_tenant==token.tenant) then 
+          tenant_is_found=true
+        end
+     end
+  else
+    tenant_is_found=true
+  end
+  
+  --ngx.log(ngx.ERR, "==============================scope_is_found :"..tostring(scope_is_found))  
+  if(scope_is_found==false ) then
+    return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid scope", error_description = "The access token scope is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_scope" error_description="The token scop is invalid or is empty"'})  
+  end
+
+  if(tenant_is_found==false ) then
+    return responses.send_HTTP_UNAUTHORIZED({[ERROR] = "invalid tenant", error_description = "The tenant is invalid or not defined"}, {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_tenant" error_description="The tenant is invalid or is empty"'})  
+  end
 
   ngx.req.set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   ngx.req.set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
   ngx.req.set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
   ngx.req.set_header("x-authenticated-scope", token.scope)
-  ngx.req.set_header("x-consumer-roles", consumer.roles)
+  -- ngx.req.set_header("x-consumer-roles", consumer.roles)
+  -- ngx.req.set_header("x-consumer-tenant", consumer.tenant)
   ngx.req.set_header("x-authenticated-userid", token.authenticated_userid)
   ngx.ctx.authenticated_credential = credential
   ngx.ctx.authenticated_consumer = consumer
 end
 
+function isEmpty(s)
+  if s==nil or s==''then
+    return true
+  end
+  return false
+end
+
+function split(s, delimiter)
+    result = {};
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match);
+    end
+    return result;
+end
+
 return _M
+
+

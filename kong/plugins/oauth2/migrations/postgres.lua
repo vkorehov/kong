@@ -58,6 +58,7 @@ return {
         expires_in int,
         authenticated_userid text,
         scope text,
+        tenant text,
         created_at timestamp without time zone default (CURRENT_TIMESTAMP(0) at time zone 'utc'),
         PRIMARY KEY (id)
       );
@@ -89,6 +90,20 @@ return {
     ]],
     down = [[
       ALTER TABLE oauth2_authorization_codes DROP COLUMN credential_id;
+    ]]
+  },
+  {
+     name = "2017-01-25-140300_alter_oauth2_tokens_schema",
+     up = [[
+        DO $$
+        BEGIN
+            IF exists(SELECT column_name FROM information_schema.columns WHERE table_name='oauth2_tokens' and column_name='tenant' LIMIT 1)=FALSE  THEN
+	      ALTER TABLE oauth2_tokens ADD COLUMN tenant text;	
+   	    END IF;   
+        END$$;
+      ]],
+     down = [[
+        ALTER TABLE oauth2_tokens DROP COLUMN tenant;
     ]]
   }
 }

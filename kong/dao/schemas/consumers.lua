@@ -19,7 +19,8 @@ return {
     created_at = {type = "timestamp", immutable = true, dao_insert_value = true, required = true},
     custom_id = {type = "string", unique = true, func = check_custom_id_and_username},
     username = {type = "string", unique = true, func = check_custom_id_and_username},
-    roles = {type = "string"}
+    roles = {type = "string"},
+    tenant = {type = "string"}
   },
   marshall_event = function(self, t)
     return { id = t.id }

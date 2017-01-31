@@ -15,7 +15,15 @@ return {
       crud.put(self.params, dao_factory.keyauth_credentials)
     end,
 
-    POST = function(self, dao_factory)
+    POST = function(self, dao_factory, helpers)
+      local credentials, err = dao_factory.keyauth_credentials:find_all {
+        consumer_id = self.params.consumer_id,
+      }
+      if err then
+        return helpers.yield_error(err)
+      elseif next(credentials) ~= nil then
+        return helpers.responses.send_HTTP_CONFLICT()
+      end
       crud.post(self.params, dao_factory.keyauth_credentials)
     end
   },

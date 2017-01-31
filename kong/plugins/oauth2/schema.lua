@@ -19,6 +19,7 @@ return {
   no_consumer = true,
   fields = {
     scopes = { required = false, type = "array" },
+    tenants = { required = false, type = "array" },
     mandatory_scope = { required = true, type = "boolean", default = false, func = check_mandatory_scope },
     provision_key = { required = false, unique = true, type = "string", func = generate_if_missing },
     ignore_pattern = { required = false, type = "string"},

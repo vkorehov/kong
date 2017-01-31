@@ -124,12 +124,13 @@ _send = function(premature, self, to_send)
   -- retry trigger, in case the collector
   -- is unresponseive
   local retry
+  local isError
 
   local client = http.new()
   client:set_timeout(self.connection_timeout)
   
   local parsed_url = parse_url(self.endpoint)
-  
+	
   local ok, err = client:connect(parsed_url.host, parsed_url.port)
   if not ok then
     retry = true
@@ -142,40 +143,47 @@ _send = function(premature, self, to_send)
         return
       end
     end
+ 
+   
+    for i,v in ipairs(to_send.payload) do
+	if not isError then
+    	  local res, err = client:request {
+            method = "POST",
+            path = parsed_url.path,
+            body = v.body,
+            headers = {
+              ["Content-Type"] = "application/json",
+	      ["app_key"] = tostring(v.app_key)
+            }
+           }
+	
+	   if not res then
+              retry = true
+	      isError = true
+              log(ERR, "could not send ALF to Host collector: ", err)
+           else
+              local body = res:read_body()
+              -- logging and error reports
+              if res.status == 200 then
+                 log(DEBUG, "Host collector saved the ALF (200 OK): ", body)
+              elseif res.status == 207 then
+                 log(DEBUG, "Host collector partially saved the ALF ".."(207 Multi-Status): ", body)
+              elseif res.status >= 400 and res.status < 500 then
+                 log(WARN, "Host collector refused this ALF (", res.status, "): ", body)
+              elseif res.status >= 500 then
+		 isError = true
+                 retry = true
+                 log(ERR, "Host collector HTTP error (", res.status, "): ", body)
+              end
+           end
 
-    local res, err = client:request {
-      method = "POST",
-      path = parsed_url.path,
-      body = to_send.payload,
-      headers = {
-        ["Content-Type"] = "application/json"
-      }
-  }
-
-    if not res then
-      retry = true
-      log(ERR, "could not send ALF to Host collector: ", err)
-    else
-      local body = res:read_body()
-      -- logging and error reports
-      if res.status == 200 then
-        log(DEBUG, "Host collector saved the ALF (200 OK): ", body)
-      elseif res.status == 207 then
-        log(DEBUG, "Host collector partially saved the ALF "
-                 .."(207 Multi-Status): ", body)
-      elseif res.status >= 400 and res.status < 500 then
-        log(WARN, "Host collector refused this ALF (", res.status, "): ", body)
-      elseif res.status >= 500 then
-        retry = true
-        log(ERR, "Host collector HTTP error (", res.status, "): ", body)
-      end
+           local ok, err = client:set_keepalive()
+           if ok ~= 1 then
+              log(ERR, "could not keepalive Host collector connection: ", err)
+           end	
+	end
     end
-
-    local ok, err = client:set_keepalive()
-    if ok ~= 1 then
-      log(ERR, "could not keepalive Host collector connection: ", err)
-    end
-  end
+end
 
   local next_retry_delay = 1
 
@@ -284,10 +292,11 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     log(ERR, "could not add entry to ALF: ", err)
     return ok, err
   end
+  local temp, temp_size, err = self.cur_alf:serialize()
   if err >= self.queue_size then -- err is the queue size in this case
      ok, err = self:flush()
      if not ok then return nil, err end -- for our tests only
-	 elseif #self.cur_alf:serialize() >  self.queue_sizeMB then -- err is the queue size in this case
+	 elseif temp_size >  self.queue_sizeMB then -- err is the queue size in this case
      ok, err = self:flush()
      if not ok then return nil, err end -- for our tests only
 	 elseif not self.timer_flush_pending then -- start delayed timer if none
@@ -300,20 +309,20 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
 end
 
 function _M:flush()
-  local alf_json, err = self.cur_alf:serialize()
+  local alf_json, size, err = self.cur_alf:serialize()
   self.cur_alf:reset()
 
   if not alf_json then
     log(ERR, "could not serialize ALF: ", err)
     return nil, err
-  elseif self.sending_queue_size + #alf_json > self.max_sending_queue_size then
+  elseif self.sending_queue_size + size > self.max_sending_queue_size then
     log(WARN, "sending queue is full, discarding this ALF")
     return nil, "buffer full"
   end
 
   log(DEBUG, "flushing ALF for sending (", err, " entries)")
 
-  self.sending_queue_size = self.sending_queue_size + #alf_json
+  self.sending_queue_size = self.sending_queue_size + size
   self.sending_queue[#self.sending_queue+1] = {
     payload = alf_json,
     retries = 0
