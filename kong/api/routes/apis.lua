@@ -10,6 +10,8 @@ return {
     PUT = function(self, dao_factory)
       if self.params.request_path ~= nil and self.params.request_path == "" then
         self.params.request_path = nil
+      elseif self.params.request_host ~= nil and self.params.request_host == "" then
+        self.params.request_host = nil
       end
       crud.put(self.params, dao_factory.apis)
     end,
@@ -17,6 +19,8 @@ return {
     POST = function(self, dao_factory)
       if self.params.request_path ~= nil and self.params.request_path == "" then
         self.params.request_path = nil
+      elseif self.params.request_host ~= nil and self.params.request_host == "" then
+        self.params.request_host = nil
       end
       crud.post(self.params, dao_factory.apis)
     end
