@@ -247,29 +247,39 @@ function _M:serialize()
     return nil, "no entries table"
   end
 
-  local json = cjson.encode(self.entries)
---  if #json > _alf_max_size then
---    return nil, "ALF too large (> 20MB)"
---  end
-
-  if self.secure_message then
- --for headers
-     local patterns = {}
- 
-     if self.secure_patterns == nil then
-	patterns = {"(assword\":)\"(.-)\"","(token\":)\"(.-)\""}
-     else
-	patterns = self.secure_patterns		
-     end
-		
-     for i,v in ipairs(patterns) do
-        json = gsub(json, v, "%1\"*******\"")
-        json = gsub(json, gsub(v, "\"", "\\\""), "%1\\\"*******\\\"")
-     end
-
-  end
+  local entries_json = {}
+  local size = 0
 	
-  return gsub(json, "\\/", "/"), #self.entries
+  for i,v in ipairs(self.entries) do
+      local appkey = v.headers["app_key"]
+      local json = cjson.encode(v)
+--    if #json > _alf_max_size then
+--      return nil, "ALF too large (> 20MB)"
+--    end
+      if self.secure_message then
+       --for headers
+         local patterns = {}
+ 
+         if self.secure_patterns == nil then
+	    patterns = {"(assword\":)\"(.-)\"","(token\":)\"(.-)\""}
+         else
+	    patterns = self.secure_patterns		
+         end
+		
+         for i,v in ipairs(patterns) do
+            json = gsub(json, v, "%1\"*******\"")
+            json = gsub(json, gsub(v, "\"", "\\\""), "%1\\\"*******\\\"")
+         end
+      end
+		
+      entries_json[i] = {
+	body = gsub(json, "\\/", "/"),
+	app_key = appkey		
+      }
+      size = size+ #entries_json
+  end		
+	
+  return entries_json, size, #self.entries
 end
 
 --- Empty the ALF
