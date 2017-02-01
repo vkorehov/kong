@@ -177,6 +177,10 @@ _send = function(premature, self, to_send)
               end
            end
 
+	   if not isError then
+	      to_send.payload[i] = nill			
+           end
+				
            local ok, err = client:set_keepalive()
            if ok ~= 1 then
               log(ERR, "could not keepalive Host collector connection: ", err)
