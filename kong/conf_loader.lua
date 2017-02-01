@@ -58,7 +58,7 @@ local CONF_INFERENCES = {
   
   serf_sleep_time = {typ = "number"},
 
-  database = {enum = {"postgres", "cassandra"}},
+  database = {enum = {"postgres", "cassandra","mongo"}},
   pg_port = {typ = "number"},
   pg_ssl = {typ = "boolean"},
   pg_ssl_verify = {typ = "boolean"},

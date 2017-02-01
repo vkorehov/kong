@@ -25,6 +25,13 @@ pg_user = kong
 pg_password = NONE
 pg_ssl = off
 pg_ssl_verify = off
+
+mongo_host = 127.0.0.1
+mongo_port = 27017
+mongo_database = kong
+mongo_user = kong
+mongo_password = kong
+
 cassandra_contact_points = 127.0.0.1
 cassandra_port = 9042
 cassandra_keyspace = kong
