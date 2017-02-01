@@ -287,6 +287,16 @@ When developing, you can use the `Makefile` for doing the following operations:
 [Learn more](https://getkong.org/enterprise) about Kong Priority Support,
 Products, HA, Demo, Training, API Certifications and Professional Services.
 
+## Mongo database  config
+```
+database = mongo #postgres                # Determines which of PostgreSQL or Cassandra ir Mongo
+
+mongo_host = localhost          # The MongoDb host to connect to
+mongo_port = 27017              # The port to connect to
+mongo_user = kong               # The username to authenticate if required !!! not implemented
+mongo_password = kong           # The password to authenticate if required !!! not implemented
+mongo_database = kong           # The database name
+```
 ## License
 
 ```
