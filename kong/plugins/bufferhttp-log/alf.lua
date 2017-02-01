@@ -276,7 +276,7 @@ function _M:serialize()
 	body = gsub(json, "\\/", "/"),
 	app_key = appkey		
       }
-      size = size+ #entries_json
+      size = size+ #entries_json[i].body
   end		
 	
   return entries_json, size, #self.entries

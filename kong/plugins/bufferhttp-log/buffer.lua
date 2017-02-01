@@ -145,7 +145,7 @@ _send = function(premature, self, to_send)
     end
  
    
-    for i,v in ipairs(to_send.payload) do
+    for i,v in next, to_send.payload do
 	if not isError then
     	  local res, err = client:request {
             method = "POST",
@@ -180,13 +180,13 @@ _send = function(premature, self, to_send)
 	   if not isError then
 	      to_send.payload[i] = nill			
            end
-				
-           local ok, err = client:set_keepalive()
-           if ok ~= 1 then
-              log(ERR, "could not keepalive Host collector connection: ", err)
-           end	
 	end
-    end
+    end	
+
+    local ok, err = client:set_keepalive()
+      if ok ~= 1 then
+        log(ERR, "could not keepalive Host collector connection: ", err)
+      end	
 end
 
   local next_retry_delay = 1
@@ -296,7 +296,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     log(ERR, "could not add entry to ALF: ", err)
     return ok, err
   end
-  local temp, temp_size, err = self.cur_alf:serialize()
+  local temp, temp_size, temp_err = self.cur_alf:serialize()
   if err >= self.queue_size then -- err is the queue size in this case
      ok, err = self:flush()
      if not ok then return nil, err end -- for our tests only

@@ -10,7 +10,7 @@ return {
     log_response = {type = "boolean", default = false},
     log_oauth2_response = {type = "boolean", default = false},
     connection_timeout = {type = "number", default = 30},
-    endpoint = {type = "string", required = true, default = "http://localhost/api/events"},
+    endpoint = {type = "string", required = true, default = "http://localhost/api/event"},
     https_verify = {type = "boolean", default = false},
     secure_message = {type = "boolean", default = false},
     add_request_id = {type = "boolean", default = true},
