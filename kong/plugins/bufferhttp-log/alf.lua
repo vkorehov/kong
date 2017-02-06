@@ -17,6 +17,7 @@
 local cjson = require "cjson.safe"
 local uuid = require("kong.tools.utils").uuid
 local timestamp = require "kong.tools.timestamp"
+local singletons = require "kong.singletons"
 local resp_get_headers = ngx.resp.get_headers
 local req_start_time = ngx.req.start_time
 local req_get_method = ngx.req.get_method
@@ -183,10 +184,6 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   if not request_headers["app_key"] then
     request_headers["app_key"]= self.default_app_key
   end	
-
-  if not request_headers["dm_location"] then
-    request_headers["dm_location"]= ngx.var.remote_addr 
-  end
 	
   request_headers["dm_http_method"]= req_get_method()
   request_headers["dm_http_method"]= req_get_method()
@@ -205,7 +202,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   request_headers["dm_request_uri"]= ngx.var.request_uri
   request_headers["dm_service_instance"]= ngx.var.upstream_addr
   request_headers["dm_api_name"]=ngx.ctx.api.name
-  request_headers["dm_server"]=ngx.var.remote_addr 	
+  request_headers["dm_server"]=singletons.configuration.ip
 	
   self.entries[idx] = {
     source = "KONG_API",
