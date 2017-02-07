@@ -181,7 +181,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
 
   if ngx.status == 504 then
     isTimeOut = 'true'
-    result = "warning"
+    result = "error"
   end
 
   if not request_headers["app_key"] then
