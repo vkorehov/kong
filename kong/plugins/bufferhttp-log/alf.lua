@@ -170,25 +170,25 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   
   local idx = #self.entries + 1
   local isError = "false"
-  local result = "success"
+  --local result = "success"
   local isTimeOut = "false"
   local now = timestamp.get_utc()
 	
   if ngx.status >= 400 then
     isError = 'true'
-    result = "error"
+    --result = "error"
   end
 
   if ngx.status == 504 then
     isTimeOut = 'true'
-    result = "error"
+    --result = "error"
   end
 
   if not request_headers["app_key"] then
     request_headers["app_key"]= self.default_app_key
   end	
 	
-  request_headers["dm_http_method"]= req_get_method()
+  --request_headers["dm_http_method"]= req_get_method()
   request_headers["dm_http_method"]= req_get_method()
   request_headers["dm_http_path"]= request_path
   request_headers["dm_http_remote_addr"]= ngx.var.remote_addr
@@ -199,7 +199,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   request_headers["dm_source"]= "KONG_API"
   request_headers["dm_name"]= "http"
   request_headers["dm_is_error"]= isError
-  request_headers["dm_result"]= result
+  --request_headers["dm_result"]= result
   request_headers["dm_is_timeout"]= isTimeOut
   request_headers["dm_oauth2_message"]= isOauth2 
   request_headers["dm_upstream_url"]= ngx.ctx.api.upstream_url	
