@@ -16,6 +16,7 @@ ssl_cert = NONE
 ssl_cert_key = NONE
 
 serf_sleep_time = 0.1
+ip = 192.168.222.10
 
 database = postgres
 pg_host = 127.0.0.1

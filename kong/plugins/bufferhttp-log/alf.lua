@@ -17,6 +17,7 @@
 local cjson = require "cjson.safe"
 local uuid = require("kong.tools.utils").uuid
 local timestamp = require "kong.tools.timestamp"
+local singletons = require "kong.singletons"
 local resp_get_headers = ngx.resp.get_headers
 local req_start_time = ngx.req.start_time
 local req_get_method = ngx.req.get_method
@@ -169,22 +170,25 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   
   local idx = #self.entries + 1
   local isError = "false"
+  --local result = "success"
   local isTimeOut = "false"
   local now = timestamp.get_utc()
 	
   if ngx.status >= 400 then
-    isError = 'true'	
+    isError = 'true'
+    --result = "error"
   end
 
   if ngx.status == 504 then
-    isTimeOut = 'true'	
+    isTimeOut = 'true'
+    --result = "error"
   end
 
   if not request_headers["app_key"] then
     request_headers["app_key"]= self.default_app_key
   end	
 	
-  request_headers["dm_http_method"]= req_get_method()
+  --request_headers["dm_http_method"]= req_get_method()
   request_headers["dm_http_method"]= req_get_method()
   request_headers["dm_http_path"]= request_path
   request_headers["dm_http_remote_addr"]= ngx.var.remote_addr
@@ -193,14 +197,16 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   request_headers["dm_http_content_type"]= resp_content_type
   request_headers["dm_http_character_enc"]= resp_transfer_encoding
   request_headers["dm_source"]= "KONG_API"
-  request_headers["event_name"]= "http"
+  request_headers["dm_name"]= "http"
   request_headers["dm_is_error"]= isError
+  --request_headers["dm_result"]= result
   request_headers["dm_is_timeout"]= isTimeOut
   request_headers["dm_oauth2_message"]= isOauth2 
   request_headers["dm_upstream_url"]= ngx.ctx.api.upstream_url	
   request_headers["dm_request_uri"]= ngx.var.request_uri
-  request_headers["dm_service_instance"]= ngx.var.upstream_addr
-  request_headers["dm_api_name"]=ngx.ctx.api.name 
+  request_headers["dm_service"]= ngx.var.upstream_addr
+  request_headers["dm_api_name"]=ngx.ctx.api.name
+  request_headers["dm_server"]=singletons.configuration.ip
 	
   self.entries[idx] = {
     source = "KONG_API",
