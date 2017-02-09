@@ -62,6 +62,8 @@ local CONF_INFERENCES = {
   pg_port = {typ = "number"},
   pg_ssl = {typ = "boolean"},
   pg_ssl_verify = {typ = "boolean"},
+  
+  mongo_port = {typ = "number"},
 
   cassandra_contact_points = {typ = "array"},
   cassandra_port = {typ = "number"},
