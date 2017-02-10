@@ -32,7 +32,7 @@ return {
       crud.delete(self.consumer, dao_factory.consumers)
     end
   },
-  ["/consumers/role/:roles"] = {
+  ["/tenant/:tenant/consumers/role/:roles"] = {
      GET = function(self, dao_factory)
        crud.paginated_set(self, dao_factory.consumers)
      end
