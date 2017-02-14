@@ -98,7 +98,7 @@ function KeyAuthHandler:access(conf)
   set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
   set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
-  set_header("X-Consumer-Tenant", consumer.tenant)
+  set_header("x-authenticated-tenant", consumer.tenant)
   ngx.ctx.authenticated_credential = credential
   ngx.ctx.authenticated_consumer = consumer
 end
