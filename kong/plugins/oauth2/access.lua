@@ -59,8 +59,8 @@ local function generate_token(conf, credential, authenticated_userid, scope, sta
   
   
   if consumer ~= nil then
-    ngx.header["x-consumer-roles"] = consumer.roles
-    ngx.header["x-consumer-tenant"] = consumer.tenant
+    ngx.header["x-authenticated-roles"] = consumer.roles
+    ngx.header["x-authenticated-tenant"] = consumer.tenant
     -- overrrides passed scopes with roles stored on customer
     scope = consumer.roles
     tenant = consumer.tenant
