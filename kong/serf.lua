@@ -118,7 +118,7 @@ function Serf:autojoin()
     local joined
     for _, v in ipairs(nodes) do
       if self:join_node(v.cluster_listening_address) then
-        log.verbose("successfully joined cluster at %s", v.cluster_listening_address)
+        log.warn("successfully joined cluster at %s", v.cluster_listening_address)
         joined = true
         break
       else
@@ -140,6 +140,7 @@ function Serf:add_node()
 
   local addr
   for _, member in ipairs(members) do
+    log.warn("member:"..member.name)
     if member.name == self.node_name then
       addr = member.addr
       break
@@ -147,9 +148,11 @@ function Serf:add_node()
   end
 
   if not addr then
+    log.warn("can't find current member address!!!")
     return nil, "can't find current member address"
   end
 
+  log.warn("inserting our node to db:"..pl_stringx.strip(addr).." node:"..self.node_name)
   local _, err = self.dao.nodes:insert({
     name = self.node_name,
     cluster_listening_address = pl_stringx.strip(addr)
@@ -165,6 +168,7 @@ function Serf:event(t_payload)
 
   if #payload > 512 then
     -- Serf can't send a payload greater than 512 bytes
+    log.warn("encoded payload is "..#payload.." and exceeds the limit of 512 bytes!")
     return nil, "encoded payload is "..#payload.." and exceeds the limit of 512 bytes!"
   end
 
