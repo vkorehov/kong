@@ -58,7 +58,7 @@ function _M.load_apis_in_memory()
       else
         -- Keep non-wildcard request_host in a dictionary for faster lookup.
         dns_dic[api.request_host] = api
-        print("ADDING TO DNS_DIC:"..api.request_host)
+        ngx.log(ngx.ERR, "ADDING TO DNS_DIC:"..api.request_host)
       end
     end
     if api.request_path then
@@ -93,17 +93,17 @@ function _M.find_api_by_request_host(req_headers, apis_dics)
       -- for all values of this header, try to find an API using the apis_by_dns dictionnary
       for _, host in ipairs(hosts) do
         host = host:match("^([^:]+)")  -- grab everything before ":"
-        print("HOST:"..host)
+        ngx.log(ngx.ERR, "HOST:"..host)
         table_insert(hosts_list, host)
         if apis_dics.by_dns[host] then
-          print("HOST FOUND IN CACHE:"..host)
+          ngx.log(ngx.ERR, "HOST FOUND IN CACHE:"..host)
           return apis_dics.by_dns[host], host
         else
           -- If the API was not found in the dictionary, maybe it is a wildcard request_host.
           -- In that case, we need to loop over all of them.
           for _, wildcard_dns in ipairs(apis_dics.wildcard_dns_arr) do
             if host:match(wildcard_dns.pattern) then
-              print("HOST FOUND IN CACHE WILDCARD:"..host)              
+              ngx.log(ngx.ERR, "HOST FOUND IN CACHE WILDCARD:"..host)              
               return wildcard_dns.api
             end
           end
@@ -111,7 +111,7 @@ function _M.find_api_by_request_host(req_headers, apis_dics)
       end
     end
   end
-  print("HOST NOT FOUND")
+  ngx.log(ngx.ERR, "HOST NOT FOUND")
   return nil, nil, hosts_list
 end
 
