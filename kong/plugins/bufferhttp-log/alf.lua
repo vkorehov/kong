@@ -197,7 +197,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   request_headers["dm_http_content_type"]= resp_content_type
   request_headers["dm_http_character_enc"]= resp_transfer_encoding
   request_headers["dm_source"]= "KONG_API"
-  request_headers["dm_name"]= "http"
+  --request_headers["dm_name"]= "http"
   request_headers["dm_is_error"]= isError
   --request_headers["dm_result"]= result
   request_headers["dm_is_timeout"]= isTimeOut
