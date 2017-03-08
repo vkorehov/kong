@@ -28,7 +28,7 @@ dependencies = {
   "luacrypto == 0.3.3-0",
   "luasyslog == 1.0.1-0",
   "lua_pack == 1.0.4",
-  "lua-httpclient" == 0.1.0-8"
+  "lua-httpclient == 0.1.0-8"
 }
 build = {
   type = "builtin",
