@@ -107,7 +107,6 @@ function _M.find_api_by_request_host(req_headers, apis_dics)
       end
     end
   end
-
   return nil, nil, hosts_list
 end
 

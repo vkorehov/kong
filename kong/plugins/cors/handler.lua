@@ -75,7 +75,6 @@ end
 
 function CorsHandler:header_filter(conf)
   CorsHandler.super.header_filter(self)
-  
   if not ngx.ctx.skip_response_headers then
     configure_origin(ngx, conf)
     configure_credentials(ngx, conf)
