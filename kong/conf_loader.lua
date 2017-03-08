@@ -58,13 +58,16 @@ local CONF_INFERENCES = {
   
   serf_sleep_time = {typ = "number"},
 
-  database = {enum = {"postgres", "cassandra","mongo"}},
+  database = {enum = {"postgres", "cassandra","mongo","consul"}},
   pg_port = {typ = "number"},
   pg_ssl = {typ = "boolean"},
   pg_ssl_verify = {typ = "boolean"},
   
   mongo_port = {typ = "number"},
-
+  
+  consul_port = {typ = "number"},
+  consul_connection_timeout = {typ = "number"},
+  
   cassandra_contact_points = {typ = "array"},
   cassandra_port = {typ = "number"},
   cassandra_repl_strategy = {enum = {"SimpleStrategy", "NetworkTopologyStrategy"}},
