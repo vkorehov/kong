@@ -27,7 +27,8 @@ dependencies = {
   "lua-resty-iputils == 0.2.1",
   "luacrypto == 0.3.3-0",
   "luasyslog == 1.0.1-0",
-  "lua_pack == 1.0.4"
+  "lua_pack == 1.0.4",
+  "lua-httpclient" == 0.1.0-8"
 }
 build = {
   type = "builtin",
@@ -60,6 +61,7 @@ build = {
     ["kong.cmd.health"] = "kong/cmd/health.lua",
     ["kong.cmd.version"] = "kong/cmd/version.lua",
     ["kong.cmd.utils.log"] = "kong/cmd/utils/log.lua",
+	["kong.cmd.utils.nlog"] = "kong/cmd/utils/nlog.lua",
     ["kong.cmd.utils.kill"] = "kong/cmd/utils/kill.lua",
     ["kong.cmd.utils.serf_signals"] = "kong/cmd/utils/serf_signals.lua",
     ["kong.cmd.utils.nginx_signals"] = "kong/cmd/utils/nginx_signals.lua",
@@ -101,6 +103,7 @@ build = {
     ["kong.dao.base_db"] = "kong/dao/base_db.lua",
     ["kong.dao.cassandra_db"] = "kong/dao/cassandra_db.lua",
     ["kong.dao.postgres_db"] = "kong/dao/postgres_db.lua",
+	["kong.dao.consul_db"] = "kong/dao/consul_db.lua",
     ["kong.dao.dao"] = "kong/dao/dao.lua",
     ["kong.dao.factory"] = "kong/dao/factory.lua",
     ["kong.dao.model_factory"] = "kong/dao/model_factory.lua",
