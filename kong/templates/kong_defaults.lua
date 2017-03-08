@@ -33,6 +33,13 @@ mongo_database = kong
 mongo_user = kong
 mongo_password = kong
 
+consul_host = 127.0.0.1
+consul_port = 8500
+consul_protocol = http
+consul_key_root = kong
+consul_connection_timeout = 1000
+consul_version = v1
+
 cassandra_contact_points = 127.0.0.1
 cassandra_port = 9042
 cassandra_keyspace = kong
