@@ -6,15 +6,9 @@ local pl_utils = require "pl.utils"
 local pl_file = require "pl.file"
 local cjson = require "cjson.safe"
 local log = require "kong.cmd.utils.log"
-local socker = require "socket"
 
 local Serf = {}
 Serf.__index = Serf
-
--- custom function, if problems = delete it
-function sleep(sec)
-    socket.select(nil, nil, sec)
-end
 
 Serf.args_mt = {
   __tostring = function(t)
@@ -34,12 +28,7 @@ end
 
 -- WARN: BAD, this is **blocking** IO. Legacy code from previous Serf
 -- implementation that needs to be upgraded.
-function Serf:invoke_signal(signal, args, no_rpc)
-  
-  if self.config.serf_sleep_time then
-    sleep(tonumber(self.config.serf_sleep_time))
-  end
-    
+function Serf:invoke_signal(signal, args, no_rpc, full_error)
   args = args or {}
   if type(args) == "table" then
     setmetatable(args, Serf.args_mt)
@@ -48,8 +37,10 @@ function Serf:invoke_signal(signal, args, no_rpc)
   local cmd = string.format("%s %s %s %s", self.config.serf_path, signal, rpc, tostring(args))
   local ok, code, stdout, stderr = pl_utils.executeex(cmd)
   if not ok or code ~= 0 then
-    -- always print the first error line of serf
-    local err = stdout ~= "" and pl_stringx.splitlines(stdout)[1] or stderr
+    local err = stderr
+    if stdout ~= "" then
+      err = full_error and stdout or pl_stringx.splitlines(stdout)[1]
+    end
     return nil, err
   end
 
@@ -66,8 +57,13 @@ function Serf:leave()
   -- fixed we can check again for any errors returned by the following command.
   self:invoke_signal("leave")
 
-  local _, err = self.dao.nodes:delete {name = self.node_name}
-  if err then return nil, tostring(err) end
+  -- This check is required in case the prefix preparation fails befofe a node
+  -- id can be generated. In that case this value will be nil and the DAO will
+  -- fail because the primary key is missing in the delete operation.
+  if self.node_name then
+    local _, err = self.dao.nodes:delete {name = self.node_name}
+    if err then return nil, tostring(err) end
+  end
 
   return true
 end
@@ -77,6 +73,14 @@ function Serf:force_leave(node_name)
   if not res then return nil, err end
 
   return true
+end
+
+function Serf:keys(action, key)
+  local res, err = self:invoke_signal(string.format("keys %s %s", action, key 
+                                              and key or ""), nil, false, true)
+  if not res then return nil, err end
+
+  return res
 end
 
 function Serf:members()
@@ -118,7 +122,7 @@ function Serf:autojoin()
     local joined
     for _, v in ipairs(nodes) do
       if self:join_node(v.cluster_listening_address) then
-        log.warn("successfully joined cluster at %s", v.cluster_listening_address)
+        log.verbose("successfully joined cluster at %s", v.cluster_listening_address)
         joined = true
         break
       else
@@ -140,7 +144,6 @@ function Serf:add_node()
 
   local addr
   for _, member in ipairs(members) do
-    log.warn("member:"..member.name)
     if member.name == self.node_name then
       addr = member.addr
       break
@@ -148,11 +151,9 @@ function Serf:add_node()
   end
 
   if not addr then
-    log.warn("can't find current member address!!!")
     return nil, "can't find current member address"
   end
 
-  log.warn("inserting our node to db:"..pl_stringx.strip(addr).." node:"..self.node_name)
   local _, err = self.dao.nodes:insert({
     name = self.node_name,
     cluster_listening_address = pl_stringx.strip(addr)
@@ -168,7 +169,6 @@ function Serf:event(t_payload)
 
   if #payload > 512 then
     -- Serf can't send a payload greater than 512 bytes
-    log.warn("encoded payload is "..#payload.." and exceeds the limit of 512 bytes!")
     return nil, "encoded payload is "..#payload.." and exceeds the limit of 512 bytes!"
   end
 

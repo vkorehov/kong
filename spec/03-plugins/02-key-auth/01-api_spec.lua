@@ -5,12 +5,21 @@ describe("Plugin: key-auth (API)", function()
   local consumer
   local admin_client
   setup(function()
-    assert(helpers.start_kong())
-    admin_client = helpers.admin_client()
-
+    assert(helpers.dao.apis:insert {
+      name = "keyauth1",
+      upstream_url = "http://mockbin.com",
+      hosts = { "keyauth1.test" },
+    })
+    assert(helpers.dao.apis:insert {
+      name = "keyauth2",
+      upstream_url = "http://mockbin.com",
+      hosts = { "keyauth2.test" },
+    })
     consumer = assert(helpers.dao.consumers:insert {
       username = "bob"
     })
+    assert(helpers.start_kong())
+    admin_client = helpers.admin_client()
   end)
   teardown(function()
     if admin_client then admin_client:close() end
@@ -151,6 +160,15 @@ describe("Plugin: key-auth (API)", function()
         local json = cjson.decode(body)
         assert.equal(credential.id, json.id)
       end)
+      it("retrieves key-auth credential by key", function()
+        local res = assert(admin_client:send {
+          method = "GET",
+          path = "/consumers/bob/key-auth/"..credential.key
+        })
+        local body = assert.res_status(200, res)
+        local json = cjson.decode(body)
+        assert.equal(credential.id, json.id)
+      end)
       it("retrieves credential by id only if the credential belongs to the specified consumer", function()
         assert(helpers.dao.consumers:insert {
           username = "alice"
@@ -171,7 +189,7 @@ describe("Plugin: key-auth (API)", function()
     end)
 
     describe("PATCH", function()
-      it("updates a credential", function()
+      it("updates a credential by id", function()
         local res = assert(admin_client:send {
           method = "PATCH",
           path = "/consumers/bob/key-auth/"..credential.id,
@@ -185,6 +203,21 @@ describe("Plugin: key-auth (API)", function()
         local body = assert.res_status(200, res)
         local json = cjson.decode(body)
         assert.equal("4321", json.key)
+      end)
+      it("updates a credential by key", function()
+        local res = assert(admin_client:send {
+          method = "PATCH",
+          path = "/consumers/bob/key-auth/"..credential.key,
+          body = {
+            key = "4321UPD"
+          },
+          headers = {
+            ["Content-Type"] = "application/json"
+          }
+        })
+        local body = assert.res_status(200, res)
+        local json = cjson.decode(body)
+        assert.equal("4321UPD", json.key)
       end)
       describe("errors", function()
         it("handles invalid input", function()
@@ -218,7 +251,7 @@ describe("Plugin: key-auth (API)", function()
             method = "DELETE",
             path = "/consumers/bob/key-auth/blah"
           })
-          assert.res_status(400, res)
+          assert.res_status(404, res)
         end)
         it("returns 404 if not found", function()
           local res = assert(admin_client:send {
@@ -228,6 +261,48 @@ describe("Plugin: key-auth (API)", function()
           assert.res_status(404, res)
         end)
       end)
+    end)
+  end)
+  describe("/apis/:api/plugins", function()
+    it("fails with invalid key_names", function()
+      local key_name = "hello\\world"
+      local res = assert(admin_client:send {
+        method = "POST",
+        path = "/apis/keyauth1/plugins",
+        body = {
+          name = "key-auth",
+          config = {
+            key_names = {key_name},
+          },
+        },
+        headers = {
+          ["Content-Type"] = "application/json"
+        }
+      })
+      assert.response(res).has.status(400)
+      local body = assert.response(res).has.jsonbody()
+      assert.equal("'hello\\world' is illegal: bad header name " ..
+                   "'hello\\world', allowed characters are A-Z, a-z, 0-9 " ..
+                   "and '-'", body["config.key_names"])
+    end)
+    it("succeeds with valid key_names", function()
+      local key_name = "hello-world"
+      local res = assert(admin_client:send {
+        method = "POST",
+        path = "/apis/keyauth2/plugins",
+        body = {
+          name = "key-auth",
+          config = {
+            key_names = {key_name},
+          },
+        },
+        headers = {
+          ["Content-Type"] = "application/json"
+        }
+      })
+      assert.response(res).has.status(201)
+      local body = assert.response(res).has.jsonbody()
+      assert.equal(key_name, body.config.key_names[1])
     end)
   end)
 end)

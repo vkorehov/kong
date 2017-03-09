@@ -21,6 +21,7 @@ describe("Admin API", function()
       local body = assert.res_status(200, res)
       local json = cjson.decode(body)
       assert.is_table(json.enabled_plugins)
+      assert.True(#json.enabled_plugins > 0)
     end)
   end)
 
@@ -30,7 +31,7 @@ describe("Admin API", function()
       for i = 1, 3 do
         local api = assert(helpers.dao.apis:insert {
           name = "api-"..i,
-          request_host = i.."-api.com",
+          hosts = { i.."-api.com" },
           upstream_url = "http://mockbin.com"
         })
 
