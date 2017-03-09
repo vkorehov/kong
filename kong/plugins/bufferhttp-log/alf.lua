@@ -41,7 +41,7 @@ local _mt = {
   __index = _M
 }
 
-function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure_message,secure_patterns,default_app_key)
+function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure_message,secure_patterns,default_auth_key)
   local alf = {
     log_request = log_request,
     log_response = log_response,
@@ -49,7 +49,7 @@ function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure
     max_msg_size = max_msg_size,
     secure_message = secure_message,
     secure_patterns = secure_patterns,
-    default_app_key = default_app_key,
+    default_auth_key = default_auth_key,
     entries = {}
   }
 
@@ -91,7 +91,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   self.max_msg_size = conf.max_msg_size_mb
   self.secure_message = conf.secure_message
   self.secure_patterns = conf.secure_patterns
-  self.default_app_key = conf.default_app_key	
+  self.default_auth_key = conf.default_auth_key	
 	
   -- retrieval
   local var = _ngx.var
@@ -184,8 +184,8 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     --result = "error"
   end
 
-  if not request_headers["app_key"] then
-    request_headers["app_key"]= self.default_app_key
+  if not request_headers["dm_auth_key"] then
+    request_headers["dm_auth_key"]= self.default_auth_key
   end	
 	
   --request_headers["dm_http_method"]= req_get_method()
@@ -257,7 +257,7 @@ function _M:serialize()
   local size = 0
 	
   for i,v in ipairs(self.entries) do
-      local appkey = v.headers["app_key"]
+      local authkey = v.headers["dm_auth_key"]
       local json = cjson.encode(v)
 --    if #json > _alf_max_size then
 --      return nil, "ALF too large (> 20MB)"
@@ -280,7 +280,7 @@ function _M:serialize()
 		
       entries_json[i] = {
 	body = gsub(json, "\\/", "/"),
-	app_key = appkey		
+	dm_auth_key = authkey		
       }
       size = size+ #entries_json[i].body
   end		
