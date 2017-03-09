@@ -1,4 +1,4 @@
-local BaseDB = require "kong.dao.base_db"
+local BaseDB = require "kong.dao.db"
 local Errors = require "kong.dao.errors"
 local utils = require "kong.tools.utils"
 local http = require "resty.http"

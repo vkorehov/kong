@@ -199,6 +199,18 @@ local function get_where(tbl)
   return concat(where, " AND ")
 end
 
+local function get_where_like(tbl)
+  local where = {}
+
+  for col, value in pairs(tbl) do
+    where[#where + 1] = string.format("%s LIKE %s",
+                        escape_identifier(col),
+                        escape_literal("%"..value.."%"))
+  end
+  --ngx.log(ngx.OK, "WHERE ", table.concat(where, " AND "))
+  return table.concat(where, " AND ")
+end
+
 local function get_select_fields(schema)
   local fields = {}
   for k, v in pairs(schema.fields) do
@@ -390,7 +402,11 @@ function _M:find_page(table_name, tbl, page, page_size, schema)
 
   local where
   if tbl then
-    where = get_where(tbl)
+    if tbl.roles ~= nil then
+       where = get_where_like(tbl)
+    else
+       where = get_where(tbl)
+    end
   end
 
   local query = select_query(self, get_select_fields(schema), schema, table_name, where, offset, page_size)
