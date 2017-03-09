@@ -525,7 +525,6 @@ function ConsulDB:ttl(key_name, schema, model, constraints, options,key_paths)
       local body,err = self:http_call(find_key,"GET")    
       
       if err~=nil then
-        trace("EEEEEE",err)
         ngx.log(ngx.ERR, "[consul] ttl find key error for key: "..find_key.." -> "..tostring(err)) 
         return nil 
       end
@@ -572,8 +571,9 @@ end
 
 
 function ConsulDB:start_ttl_timer()
+  --[[
   if ngx and self.timer_started==nil then
-    local ok, err = ngx.timer.at(TTL_CLEANUP_INTERVAL, do_clean_ttl, self)
+     local ok, err = ngx.timer.at(TTL_CLEANUP_INTERVAL, do_clean_ttl, self)
      if not ok then
          ngx.log(ngx.ERR, "failed to create the timer: ", err)
          return
@@ -581,6 +581,7 @@ function ConsulDB:start_ttl_timer()
     self.timer_started = true
     trace("start_ttl_timer[timer_started] --->",self.timer_started)
   end
+  --]]
 end
 
 function get_ttl_key(model, key_name, schema, ttl)
