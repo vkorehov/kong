@@ -17,7 +17,7 @@ local conn_opts = nil
 
 
 function ConsulDB:init()
-  -- this is not used
+  self:start_ttl_timer()
 end
 
 ConsulDB.dao_insert_values = {
@@ -487,7 +487,7 @@ end
 function ConsulDB:ttl(key_name, schema, model, constraints, options,key_paths)
     local ttl = options.ttl 
     -- init timer
-    self:start_ttl_timer()
+    --self:start_ttl_timer()
     if model == nil then model = {} end
     if constraints == nil then constraints = {} end
     if schema == nil then schema = {} end
@@ -571,9 +571,8 @@ end
 
 
 function ConsulDB:start_ttl_timer()
-  --[[
   if ngx and self.timer_started==nil then
-     local ok, err = ngx.timer.at(TTL_CLEANUP_INTERVAL, do_clean_ttl, self)
+    local ok, err = ngx.timer.at(TTL_CLEANUP_INTERVAL, do_clean_ttl, self)
      if not ok then
          ngx.log(ngx.ERR, "failed to create the timer: ", err)
          return
@@ -581,7 +580,6 @@ function ConsulDB:start_ttl_timer()
     self.timer_started = true
     trace("start_ttl_timer[timer_started] --->",self.timer_started)
   end
-  --]]
 end
 
 function get_ttl_key(model, key_name, schema, ttl)
