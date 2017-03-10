@@ -15,7 +15,7 @@ local ngx_stub = _G.ngx
 local conn_opts = nil
 
 
-function _M:init()
+function _M:init_worker()
   self:start_ttl_timer()
 end
 
@@ -30,8 +30,9 @@ _M.dao_insert_values = {
 
 
 -- during init checks consul status
-function _M:new(kong_config)  
-  conn_opts = {
+function _M.new(kong_config)  
+  local self = _M.super.new()
+  self.query_options = {
     host = kong_config.consul_host,
     port = kong_config.consul_port,
     key_root = kong_config.consul_key_root,
@@ -39,16 +40,16 @@ function _M:new(kong_config)
     version = kong_config.consul_version,
     protocol = kong_config.consul_protocol
   }
-  _M.super.new(self, "consul", conn_opts)
-  conn_opts = self:_get_conn_options()
   
-  local status_check_path = conn_opts.version.."/status/leader";
+  local status_check_path = self.query_options.version.."/status/leader";
   local res,err = self.lusis_http_client_call(self,status_check_path,"GET")
   if not res then
     ngx.log(ngx.ERR, "[consul] could not get consul status: "..tostring(err))
     print("[consul] could not get consul status: "..tostring(err))
     error(tostring(err))
   end
+
+  return self
 end
 
 -- used by kong
