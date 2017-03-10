@@ -12,7 +12,6 @@ local uuid = utils.uuid
 local TTL_CLEANUP_INTERVAL = 60 -- 1 minute
 local _M = require("kong.dao.db").new_db("consul")
 local ngx_stub = _G.ngx
-local conn_opts = nil
 
 
 function _M:init_worker()
@@ -56,7 +55,7 @@ end
 function _M:infos()
   return {
     desc = "database",
-    name = self:_get_conn_options().key_root
+    name = self:clone_query_options().key_root
   }
 end
 
@@ -64,12 +63,12 @@ end
 
 --returns consul key value database root key
 function get_key_root()
-  return "/"..conn_opts.version.."/kv/"..conn_opts.key_root
+  return "/"..self:clone_query_options().version.."/kv/"..self:clone_query_options().key_root
 end
 
 --returns consul key value database version key
 function get_key_root_version()
-  return "/"..conn_opts.version.."/kv/"
+  return "/"..self:clone_query_options().version.."/kv/"
 end
 
 --checks for composite key, schema who have multiple primary keys
@@ -267,7 +266,7 @@ end
 --[[
 function get_http_client(premature)
   local client = http.new()
-  client:set_timeout(conn_opts.connection_timeout)
+  client:set_timeout(self:clone_query_options().connection_timeout)
   return client
 end
 --]]
@@ -336,7 +335,7 @@ end
 -- lusis http client
 function _M:lusis_http_client_call(consul_key, method, body)
   local hc = http_client.new()
-  local address = conn_opts.protocol..'://'..conn_opts.host..":"..conn_opts.port
+  local address = self:clone_query_options().protocol..'://'..self:clone_query_options().host..":"..self:clone_query_options().port
   local result_body = nil
   local res, err = nil 
   if method == 'GET' then
@@ -372,7 +371,7 @@ end
 --[[
 function _M:resty_http_client_call(consul_key, method, body)
   local client = get_http_client()
-  local ok, err = client:connect(conn_opts.host, conn_opts.port)
+  local ok, err = client:connect(self:clone_query_options().host, self:clone_query_options().port)
   local result_body = nil
   if not ok then
     ngx.log(ngx.ERR, "[consul] could not connect to consul: "..tostring(err))
