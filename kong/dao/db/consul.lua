@@ -30,8 +30,7 @@ _M.dao_insert_values = {
 
 
 -- during init checks consul status
-function _M:new(kong_config)
-  
+function _M:new(kong_config)  
   conn_opts = {
     host = kong_config.consul_host,
     port = kong_config.consul_port,
