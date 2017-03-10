@@ -20,7 +20,6 @@ admin_ssl_cert = NONE
 admin_ssl_cert_key = NONE
 upstream_keepalive = 60
 
-serf_sleep_time = 0.1
 ip = 192.168.222.10
 
 database = postgres
