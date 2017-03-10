@@ -62,17 +62,17 @@ end
 
 
 --returns consul key value database root key
-function get_key_root()
+local function get_key_root(self)
   return "/"..self:clone_query_options().version.."/kv/"..self:clone_query_options().key_root
 end
 
 --returns consul key value database version key
-function get_key_root_version()
+local function get_key_root_version(self)
   return "/"..self:clone_query_options().version.."/kv/"
 end
 
 --checks for composite key, schema who have multiple primary keys
-function is_composite_key(schema,model)
+local function is_composite_key(schema,model)
   local primaryKeys = schema.primary_key;
   
   if #primaryKeys == 0 or primaryKeys == nil then return false end
@@ -86,7 +86,7 @@ function is_composite_key(schema,model)
 end
 
 -- from shema returns fk keys
-function get_fk_paths(schema,model,key_name)
+local function get_fk_paths(schema,model,key_name)
   local res = {}
   if schema == nil then return res end
   if model == nil then model = {} end
@@ -116,7 +116,7 @@ function get_fk_paths(schema,model,key_name)
 end
 
 -- from shema return unique field keys
-function get_unique_field_paths(schema,model,key_name)
+local function get_unique_field_paths(schema,model,key_name)
   local res = {}
   if schema == nil then return res end
   if model == nil then model = {} end
@@ -146,7 +146,7 @@ function get_unique_field_paths(schema,model,key_name)
 end
 
 -- returns pk paths + composite pk path in table type
-function get_all_pks(schema,model,key_name)
+local function get_all_pks(schema,model,key_name)
   local composite_key = ""
   local composite_key_value = ""
   local res = {}
@@ -193,14 +193,14 @@ end
 
 
 -- returns only composite pk
-function get_composit_pk_path(schema,model,key_name)
+local function get_composit_pk_path(schema,model,key_name)
   local all_pk = get_all_pks(schema,model,key_name) 
   if all_pk == nil then return {} end 
   return all_pk.composite_key
 end
 
 -- return only pk paths without composite path
-function get_only_pk_paths(schema,model,key_name)
+local function get_only_pk_paths(schema,model,key_name)
   local all_pk = get_all_pks(schema,model,key_name) 
   if all_pk == nil then return {} end 
   if all_pk.pk == nil then return {} end
@@ -208,7 +208,7 @@ function get_only_pk_paths(schema,model,key_name)
 end
 
 -- return all pk paths and composite as well
-function get_pk_paths(schema,model,key_name)
+local function get_pk_paths(schema,model,key_name)
   local all_pk = get_all_pks(schema,model,key_name) 
   if all_pk == nil then return {} end 
   local res = all_pk.pk
@@ -218,7 +218,7 @@ function get_pk_paths(schema,model,key_name)
 end
 
 -- builds key path
-function get_key_path(key_table)
+local function get_key_path(key_table)
   local key_path = ""
   table.sort(key_table)
   local i = 0
@@ -235,7 +235,7 @@ function get_key_path(key_table)
 end
 
 -- based on key_name=key_value table and root key name builds key path list
-function get_key_paths(key_table,key_name)
+local function get_key_paths(key_table,key_name)
   local key_paths = {}
   table.sort(key_table)
   -- creates composite key and also individual ones
@@ -264,7 +264,7 @@ function get_key_paths(key_table,key_name)
 end
 
 --[[
-function get_http_client(premature)
+local function get_http_client(premature)
   local client = http.new()
   client:set_timeout(self:clone_query_options().connection_timeout)
   return client
@@ -272,7 +272,7 @@ end
 --]]
 
 -- converts lua object to json
-function convert_to_json_string(data)
+local function convert_to_json_string(data)
   if data == nil then
     return "";
   end
@@ -284,7 +284,7 @@ function convert_to_json_string(data)
 end
 
 --converts from json to lua object
-function convert_from_json_string(json_string)
+local function convert_from_json_string(json_string)
   if json_string == nil then
     return {}
   end
@@ -300,7 +300,7 @@ function convert_from_json_string(json_string)
 end
 
 -- converts to lua object and extracts BASE64 encoded vale from consul key
-function convert_and_extract(json_string)
+local function convert_and_extract(json_string)
   local results = {}
   local res, err = convert_from_json_string(json_string)
   if err ~= nil then
@@ -326,7 +326,7 @@ end
 
 
 -- used for development to trace 
-function trace(message, data) 
+local function trace(message, data) 
   local dev_log = require "kong.cmd.utils.nlog"
   dev_log.printc(message,data)
 end
@@ -453,7 +453,7 @@ function _M:insert(key_name, schema, model, constraints, options)
   for k,v in pairs(fk_paths) do table.insert(key_paths,v) end
   for k,v in pairs(unique_key_paths) do table.insert(key_paths,v) end
   
-  local key_root = get_key_root()
+  local key_root = get_key_root(self)
   
   model.created_at=math.floor(luatz.gettime.gettime())*1000 -- sec*1000=milisec
   
@@ -516,7 +516,7 @@ function _M:ttl(key_name, schema, model, constraints, options,key_paths)
     local ttl_insert_key = ttl_key.."/"..et.day.."_"..et.month.."_"..et.year.."_"..et.hour.."_"..et.min
     
     if ttl_key~=nil then
-      local key_root = get_key_root()
+      local key_root = get_key_root(self)
       local find_key = key_root.."/"..ttl_key.."?recurse&keys"
       
       --look for existing keys
@@ -536,7 +536,7 @@ function _M:ttl(key_name, schema, model, constraints, options,key_paths)
         end
         
         for _,key in pairs(body_json) do 
-          local to_delete_key = get_key_root_version()..key
+          local to_delete_key = get_key_root_version(self)..key
           local body,err = self:http_call(to_delete_key,"DELETE","")
           if err then
             ngx.log(ngx.ERR, "[consul] failed to delete ttl. Error details "..key.."->"..tostring(err))
@@ -597,8 +597,8 @@ end
 
 function _M:clear_expired_ttl()
 
-  local key_root = get_key_root()
-  local key_version = get_key_root_version()
+  local key_root = get_key_root(self)
+  local key_version = get_key_root_version(self)
   local quer_all_keys = key_root.."/ttls/?keys"
   --look for existing keys
   local body,err = self:http_call(quer_all_keys,"GET") 
@@ -700,7 +700,7 @@ end
 function _M:count(key_name, filter, schema)
   local count=0
   if filter == nil then filter = {} end
-  local key_root =  get_key_root()
+  local key_root =  get_key_root(self)
   
   local composite_key_path = get_composit_pk_path(schema, filter,key_name)
   local consul_key = composite_key_path
@@ -798,7 +798,7 @@ function get_associated_key_paths(constraints,model)
 end
 
 function _M:delete(key_name, schema, filter, constraints)
-  local key_root = get_key_root()
+  local key_root = get_key_root(self)
   local to_delete_rows  = self:find_all(key_name, filter, schema)
   if to_delete_rows == nil or #to_delete_rows==0 then
     ngx.log(ngx.ERR, "[consul] nothing to delete for key")
@@ -854,7 +854,7 @@ end
 
 
 function _M:find_page(key_name, filter, page, page_size, schema)
-  local key_root =  get_key_root()
+  local key_root =  get_key_root(self)
   if filter == nil then filter = {} end
   local is_composite_key = is_composite_key(schema,filter);
   local composite_key_path = nil
@@ -947,7 +947,7 @@ end
 
 
 function _M:find_all(key_name, filter, schema)
-  local key_root =  get_key_root()
+  local key_root =  get_key_root(self)
   if filter == nil then filter = {} end
   local is_composite_key = is_composite_key(schema,filter);
   local composite_key_path = nil
