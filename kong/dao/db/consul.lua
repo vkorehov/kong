@@ -1,4 +1,3 @@
-local BaseDB = require "kong.dao.db"
 local Errors = require "kong.dao.errors"
 local utils = require "kong.tools.utils"
 local http = require "resty.http"
@@ -11,16 +10,16 @@ local uuid = utils.uuid
 
 -- enable or disable logging
 local TTL_CLEANUP_INTERVAL = 60 -- 1 minute
-local ConsulDB = BaseDB:extend()
+local _M = require("kong.dao.db").new_db("consul")
 local ngx_stub = _G.ngx
 local conn_opts = nil
 
 
-function ConsulDB:init()
+function _M:init()
   self:start_ttl_timer()
 end
 
-ConsulDB.dao_insert_values = {
+_M.dao_insert_values = {
   id = function()
     return uuid()
   end,
@@ -31,7 +30,7 @@ ConsulDB.dao_insert_values = {
 
 
 -- during init checks consul status
-function ConsulDB:new(kong_config)
+function _M:new(kong_config)
   
   conn_opts = {
     host = kong_config.consul_host,
@@ -41,7 +40,7 @@ function ConsulDB:new(kong_config)
     version = kong_config.consul_version,
     protocol = kong_config.consul_protocol
   }
-  ConsulDB.super.new(self, "consul", conn_opts)
+  _M.super.new(self, "consul", conn_opts)
   conn_opts = self:_get_conn_options()
   
   local status_check_path = conn_opts.version.."/status/leader";
@@ -54,7 +53,7 @@ function ConsulDB:new(kong_config)
 end
 
 -- used by kong
-function ConsulDB:infos()
+function _M:infos()
   return {
     desc = "database",
     name = self:_get_conn_options().key_root
@@ -335,7 +334,7 @@ end
 
 
 -- lusis http client
-function ConsulDB:lusis_http_client_call(consul_key, method, body)
+function _M:lusis_http_client_call(consul_key, method, body)
   local hc = http_client.new()
   local address = conn_opts.protocol..'://'..conn_opts.host..":"..conn_opts.port
   local result_body = nil
@@ -371,7 +370,7 @@ function ConsulDB:lusis_http_client_call(consul_key, method, body)
 end
 
 --[[
-function ConsulDB:resty_http_client_call(consul_key, method, body)
+function _M:resty_http_client_call(consul_key, method, body)
   local client = get_http_client()
   local ok, err = client:connect(conn_opts.host, conn_opts.port)
   local result_body = nil
@@ -425,25 +424,25 @@ end
   --]]
   
 --lusis http client wrapper  
-function ConsulDB:http_call(consul_key, method, body)
+function _M:http_call(consul_key, method, body)
   local result_body,err = self:lusis_http_client_call(consul_key,method,body)
   return result_body,err
 end
 
 
 -- adds record in schema_migrations collection
-function ConsulDB:record_migration(id, name)
+function _M:record_migration(id, name)
   -- not used
 end
 
 -- No mmigrations are run
-function ConsulDB:current_migrations()
+function _M:current_migrations()
   --not used
   return {}
 end
 
 
-function ConsulDB:insert(key_name, schema, model, constraints, options)
+function _M:insert(key_name, schema, model, constraints, options)
   
   -- obtains all key kombinations for entity
   local pk_paths = get_pk_paths(schema, model,key_name)
@@ -484,7 +483,7 @@ end
 
 -- some entities as oauth2 token have ttl, this is used to cleanup key spaces once 
 -- token is not valid anymore
-function ConsulDB:ttl(key_name, schema, model, constraints, options,key_paths)
+function _M:ttl(key_name, schema, model, constraints, options,key_paths)
     local ttl = options.ttl 
     -- init timer
     --self:start_ttl_timer()
@@ -570,7 +569,7 @@ local function do_clean_ttl(premature, mon)
 end
 
 
-function ConsulDB:start_ttl_timer()
+function _M:start_ttl_timer()
   if ngx and self.timer_started==nil then
     local ok, err = ngx.timer.at(TTL_CLEANUP_INTERVAL, do_clean_ttl, self)
      if not ok then
@@ -597,7 +596,7 @@ local function get_timezone(now)
   return os.difftime(now, os.time(os.date("!*t", now)))
 end
 
-function ConsulDB:clear_expired_ttl()
+function _M:clear_expired_ttl()
 
   local key_root = get_key_root()
   local key_version = get_key_root_version()
@@ -673,7 +672,7 @@ end
 
 
 
-function ConsulDB:find(key_name, schema, filter)
+function _M:find(key_name, schema, filter)
   local result,err = self:find_all(key_name, filter, schema)
   if err ~= nil then
     ngx.log(ngx.ERR, "[consul] find error for key root: "..key_name)  
@@ -685,7 +684,7 @@ end
 
 
 
-function ConsulDB:find_by_key(key_path)
+function _M:find_by_key(key_path)
   local body,err = self:http_call(key_path,"GET")
   if(body==nil)then return{} end
   if err ~= nil then
@@ -699,7 +698,7 @@ end
 
 
 
-function ConsulDB:count(key_name, filter, schema)
+function _M:count(key_name, filter, schema)
   local count=0
   if filter == nil then filter = {} end
   local key_root =  get_key_root()
@@ -752,7 +751,7 @@ function ConsulDB:count(key_name, filter, schema)
   return count
 end
 
-function ConsulDB:update(key_name, schema, constraints, filter, values, nils, full, model, options)
+function _M:update(key_name, schema, constraints, filter, values, nils, full, model, options)
   local res,err = self:insert(key_name, schema, model, constraints, options)
   if err~=nil then
      ngx.log(ngx.ERR, "[consul] failed to update value. Error details "..tostring(err))
@@ -799,7 +798,7 @@ function get_associated_key_paths(constraints,model)
   return associated_key_paths;
 end
 
-function ConsulDB:delete(key_name, schema, filter, constraints)
+function _M:delete(key_name, schema, filter, constraints)
   local key_root = get_key_root()
   local to_delete_rows  = self:find_all(key_name, filter, schema)
   if to_delete_rows == nil or #to_delete_rows==0 then
@@ -838,7 +837,7 @@ function ConsulDB:delete(key_name, schema, filter, constraints)
   return to_delete
 end
 
-function ConsulDB:query(filter, schema)
+function _M:query(filter, schema)
   if filter == nil then filter = {} end
   local key_name = nil
   if scheam ~= nil then
@@ -855,7 +854,7 @@ function ConsulDB:query(filter, schema)
 end
 
 
-function ConsulDB:find_page(key_name, filter, page, page_size, schema)
+function _M:find_page(key_name, filter, page, page_size, schema)
   local key_root =  get_key_root()
   if filter == nil then filter = {} end
   local is_composite_key = is_composite_key(schema,filter);
@@ -948,7 +947,7 @@ end
 
 
 
-function ConsulDB:find_all(key_name, filter, schema)
+function _M:find_all(key_name, filter, schema)
   local key_root =  get_key_root()
   if filter == nil then filter = {} end
   local is_composite_key = is_composite_key(schema,filter);
@@ -1005,4 +1004,4 @@ end
 
 
 
-return ConsulDB
+return _M
