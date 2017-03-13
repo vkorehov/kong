@@ -16,6 +16,7 @@ local ngx_stub = _G.ngx
 
 function _M:init_worker()
   self:start_ttl_timer()
+  return true
 end
 
 _M.dao_insert_values = {
