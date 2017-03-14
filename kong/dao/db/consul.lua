@@ -155,6 +155,20 @@ local function get_all_pks(schema,model,key_name)
   local primaryKeys = schema.primary_key;
   if #primaryKeys == 0 then return res end
   
+  if #primaryKeys >1 then
+    local primaryKeysFiltered = {}
+    for i, pk in pairs(primaryKeys) do
+      if pk == 'id' then
+        table.insert(primaryKeysFiltered,pk)
+      end
+    end 
+    primaryKeys = primaryKeysFiltered
+    if #primaryKeys == 0 then
+      ngx.log(ngx.ERR, "[consul] for key "..key_name.." can not build trustfull key from primary keys")
+    end
+  end
+  
+  
   for _,pk_key_name in pairs(primaryKeys) do 
     local pk_key_value = model[pk_key_name]
     if pk_key_value==nil then pk_key_value="" end
@@ -854,6 +868,42 @@ function _M:query(filter, schema)
 end
 
 
+function shallowcopy(orig)
+    local orig_type = type(orig)
+    local copy = {} 
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+
+function aplyFilter(results,filter,schema)
+  local res = {}
+  local filter_ref = shallowcopy(filter)
+  
+  for index1,result in pairs(results) do
+    for filter_key,filter_value in pairs(filter_ref) do 
+      local res_val = result[filter_key]   
+      if res_val~=nil then
+        if(res_val==filter_value) then
+          filter_ref[filter_key]=nil
+        end      
+      end
+    end
+    if next(filter_ref) == nil then
+      table.insert(res,result)
+    end
+  end
+  
+  return res  
+end
+
 function _M:find_page(key_name, filter, page, page_size, schema)
   local key_root =  get_key_root(self)
   if filter == nil then filter = {} end
@@ -892,7 +942,9 @@ function _M:find_page(key_name, filter, page, page_size, schema)
     consul_key = key_root.."/"..consul_key
   end
   
+  local filter_results = false
   if consul_key == nil then 
+    filter_results = true
     consul_key = key_root.."/"..key_name.."/composite"
   end 
   
@@ -918,7 +970,13 @@ function _M:find_page(key_name, filter, page, page_size, schema)
   if err ~= nil then
     ngx.log(ngx.ERR, "[consul] finda_page error for key: "..consul_key)  
   end
+  
   local rows = convert_and_extract(body)
+  
+  if filter_results then
+    rows = aplyFilter(rows,filter,schema)
+    total_pages = math.ceil(#rows/page_size)
+  end
   
   local page_rows = {}
   local c_start = page_size*(page-1)
@@ -986,7 +1044,9 @@ function _M:find_all(key_name, filter, schema)
     consul_key = key_root.."/"..consul_key
   end
   
+  local filter_results = false
   if consul_key == nil then 
+    filter_results = true
     consul_key = key_root.."/"..key_name.."/composite"
   end 
   
@@ -998,7 +1058,13 @@ function _M:find_all(key_name, filter, schema)
   if err ~= nil then
     ngx.log(ngx.ERR, "[consul] finda_all error for key: "..consul_key)  
   end
+  
   local rows = convert_and_extract(body)
+  if filter_results then
+    rows = aplyFilter(rows,filter,schema)
+  end
+  
+  
   return rows, nil
 end
 
