@@ -590,8 +590,9 @@ _M.validate_header_name = function(name)
   if name == nil or name == "" then
     return nil, "no header name provided"
   end
-
-  if re_match(name, "^[a-zA-Z0-9-]+$", "jo") then
+  
+  --added underscore since we historically have been bind to this character in headers values 
+  if re_match(name, "^[a-zA-Z0-9-_]+$", "jo") then
     return name
   end
 
