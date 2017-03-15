@@ -39,9 +39,28 @@ local AUTHENTICATED_USERID = "authenticated_userid"
 local function generate_token(conf, api, credential, authenticated_userid, scope, state, expiration, disable_refresh)
   local token_expiration = expiration or conf.token_expiration
 
+  local tenant
   local refresh_token
   if not disable_refresh and token_expiration > 0 then
     refresh_token = utils.random_string()
+  end
+  
+   -- Retrive the consumer from the credential
+  local consumer = cache.get_or_set(cache.consumer_key(credential.consumer_id), function()
+    local result, err = singletons.dao.consumers:find {id = credential.consumer_id}
+    if err then
+      return responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
+    end
+    return result
+  end)
+  
+  
+  if consumer ~= nil then
+    ngx.header["x-consumer-roles"] = consumer.roles
+    ngx.header["x-consumer-tenant"] = consumer.tenant
+    -- overrrides passed scopes with roles stored on customer
+    scope = consumer.roles
+    tenant = consumer.tenant
   end
 
   local api_id
@@ -54,7 +73,8 @@ local function generate_token(conf, api, credential, authenticated_userid, scope
     authenticated_userid = authenticated_userid,
     expires_in = token_expiration,
     refresh_token = refresh_token,
-    scope = scope
+    scope = scope,
+    tenant = tenant
   }, {ttl = token_expiration > 0 and 1209600 or nil}) -- Access tokens (and their associated refresh token) are being
                                                       -- permanently deleted after 14 days (1209600 seconds)
 
