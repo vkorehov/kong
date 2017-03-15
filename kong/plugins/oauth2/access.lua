@@ -499,7 +499,7 @@ local function do_authentication(conf)
   end
   
   if conf.scopes~=nil and table.getn(conf.scopes)>0 and isEmpty(token.scope)==false then
-     local token_scopes = split(token.scope,",")
+     local token_scopes = utils.split(token.scope,",")
      
      for key,api_scope in pairs(conf.scopes) do 
         --ngx.log(ngx.ERR, "==============================api_scope :"..tostring(api_scope))  
