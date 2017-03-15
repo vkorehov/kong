@@ -518,9 +518,9 @@ local function do_authentication(conf)
      end
   end
     
-  if (token.api_id and ngx.ctx.api.id ~= token.api_id) or (token.api_id == nil and not conf.global_credentials) then
-    return false, {status = 401, message = {[ERROR] = "invalid_token", error_description = "The access token is invalid or has expired"}, headers = {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_token" error_description="The access token is invalid or has expired"'}}
-  end
+  --if (token.api_id and ngx.ctx.api.id ~= token.api_id) or (token.api_id == nil and not conf.global_credentials) then
+  --  return false, {status = 401, message = {[ERROR] = "invalid_token", error_description = "The access token is invalid or has expired"}, headers = {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_token" error_description="The access token is invalid or has expired"'}}
+  --end
 
   if (scope_is_found==false ) then
     return false, {status = 401, message = {[ERROR] = "invalid_scope", error_description = "The access token scope is invalid"}, headers = {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_scope" error_description="The access token scope is invalid or has expired"'}}
