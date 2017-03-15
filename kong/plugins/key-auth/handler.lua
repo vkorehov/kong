@@ -46,6 +46,8 @@ local function set_consumer(consumer, credential)
   ngx_set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   ngx_set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
   ngx_set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
+  ngx_set_header("x-authenticated-tenant",consumer.tenant)
+  ngx_set_header("x-authenticated-roles",consumer.roles)
   ngx.ctx.authenticated_consumer = consumer
   if credential then
     ngx_set_header(constants.HEADERS.CREDENTIAL_USERNAME, credential.username)
@@ -115,12 +117,17 @@ local function do_authentication(conf)
                                     nil, load_consumer, credential.consumer_id)
 
   set_consumer(consumer, credential)
-  set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
-  set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
-  set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
-  set_header("x-authenticated-tenant", consumer.tenant)
-  ngx.ctx.authenticated_credential = credential
-  ngx.ctx.authenticated_consumer = consumer
+  --set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
+  --set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
+  --set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
+  --set_header("x-authenticated-tenant", consumer.tenant)
+  --ngx.header[constants.HEADERS.CONSUMER_ID] = consumer.id
+  --ngx.header[constants.HEADERS.CONSUMER_CUSTOM_ID] = consumer.custom_id
+  --ngx.header[constants.HEADERS.CONSUMER_USERNAME] = consumer.username
+  --ngx.header["x-authenticated-tenant"] = consumer.tenant
+  
+  --ngx.ctx.authenticated_credential = credential
+  --ngx.ctx.authenticated_consumer = consumer
   return true
 end
 
