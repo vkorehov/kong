@@ -457,7 +457,7 @@ end
 
 
 function _M:insert(key_name, schema, model, constraints, options)
-  
+   trace("insert "..key_name,model)
   -- obtains all key kombinations for entity
   local pk_paths = get_pk_paths(schema, model,key_name)
   local fk_paths = get_fk_paths(schema,model,key_name)
@@ -700,6 +700,7 @@ end
 
 
 function _M:find_by_key(key_path)
+  trace("find_by_key",key_path)
   local body,err = self:http_call(key_path,"GET")
   if(body==nil)then return{} end
   if err ~= nil then
@@ -814,6 +815,7 @@ function get_associated_key_paths(constraints,model)
 end
 
 function _M:delete(key_name, schema, filter, constraints)
+  trace("delete "..key_name,filter)
   local key_root = get_key_root(self)
   local to_delete_rows  = self:find_all(key_name, filter, schema)
   if to_delete_rows == nil or #to_delete_rows==0 then
