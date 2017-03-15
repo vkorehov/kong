@@ -388,11 +388,16 @@ local function load_token_into_memory(conf, api, access_token)
 end
 
 local function retrieve_token(conf, access_token)
+  local dev_log = require "kong.cmd.utils.nlog"
+  dev_log.printc("---> conf",conf)
+  dev_log.printc("---> access_token",access_token)
+  
   local token
   if access_token then
     token = cache.get_or_set(cache.oauth2_token_key(access_token), nil,
                              load_token_into_memory, conf, ngx.ctx.api, access_token)
   end
+  dev_log.printc("---> token",token)
   return token
 end
 

@@ -687,6 +687,7 @@ end
 
 
 function _M:find(key_name, schema, filter)
+  trace("find "..key_name,filter) 
   local result,err = self:find_all(key_name, filter, schema)
   if err ~= nil then
     ngx.log(ngx.ERR, "[consul] find error for key root: "..key_name)  
@@ -852,6 +853,7 @@ function _M:delete(key_name, schema, filter, constraints)
 end
 
 function _M:query(filter, schema)
+  trace("query ",filter)
   if filter == nil then filter = {} end
   local key_name = nil
   if scheam ~= nil then
@@ -905,6 +907,7 @@ function aplyFilter(results,filter,schema)
 end
 
 function _M:find_page(key_name, filter, page, page_size, schema)
+  trace("find_page "..key_name,filter)
   local key_root =  get_key_root(self)
   if filter == nil then filter = {} end
   local is_composite_key = is_composite_key(schema,filter);
@@ -1006,6 +1009,7 @@ end
 
 
 function _M:find_all(key_name, filter, schema)
+  trace("find_all "..key_name,filter)
   local key_root =  get_key_root(self)
   if filter == nil then filter = {} end
   local is_composite_key = is_composite_key(schema,filter);
