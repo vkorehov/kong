@@ -288,7 +288,7 @@ function _M:serialize()
 		
       entries_json[i] = {
 	body = gsub(json, "\\/", "/"),
-	dm_auth_key = authkey		
+	dm_auth_key = authkey,
         dm_app = app
       }
       size = size+ #entries_json[i].body
