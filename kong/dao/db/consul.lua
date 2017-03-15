@@ -947,9 +947,7 @@ function _M:find_page(key_name, filter, page, page_size, schema)
     consul_key = key_root.."/"..consul_key
   end
   
-  local filter_results = false
   if consul_key == nil then 
-    filter_results = true
     consul_key = key_root.."/"..key_name.."/composite"
   end 
   
@@ -957,13 +955,13 @@ function _M:find_page(key_name, filter, page, page_size, schema)
     page = 1
   end
   
-  local total_count, err = self:count(key_name, filter, schema)
-  if err then
-    return nil, err
-  end
+  --local total_count, err = self:count(key_name, filter, schema)
+  --if err then
+  --  return nil, err
+  --end
   
   
-  local total_pages = math.ceil(total_count/page_size)
+  --local total_pages = math.ceil(total_count/page_size)
   local offset = page_size * (page - 1)
   
   consul_key = consul_key.."?recurse"
@@ -977,11 +975,8 @@ function _M:find_page(key_name, filter, page, page_size, schema)
   end
   
   local rows = convert_and_extract(body)
-  
-  if filter_results then
-    rows = aplyFilter(rows,filter,schema)
-    total_pages = math.ceil(#rows/page_size)
-  end
+  rows = aplyFilter(rows,filter,schema)
+  local total_pages = math.ceil(#rows/page_size)
   
   local page_rows = {}
   local c_start = page_size*(page-1)
@@ -1050,9 +1045,7 @@ function _M:find_all(key_name, filter, schema)
     consul_key = key_root.."/"..consul_key
   end
   
-  local filter_results = false
   if consul_key == nil then 
-    filter_results = true
     consul_key = key_root.."/"..key_name.."/composite"
   end 
   
@@ -1066,10 +1059,7 @@ function _M:find_all(key_name, filter, schema)
   end
   
   local rows = convert_and_extract(body)
-  if filter_results then
-    rows = aplyFilter(rows,filter,schema)
-  end
-  
+  rows = aplyFilter(rows,filter,schema)
   
   return rows, nil
 end
