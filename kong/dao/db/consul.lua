@@ -976,8 +976,8 @@ function _M:find_page(key_name, filter, page, page_size, schema)
   
   local rows = convert_and_extract(body)
   rows = aplyFilter(rows,filter,schema)
-  local total_pages = math.ceil(#rows/page_size)
-  
+  local total_count = #rows
+  local total_pages = math.ceil(total_count/page_size)
   local page_rows = {}
   local c_start = page_size*(page-1)
   local c_end = c_start+page_size
