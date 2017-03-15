@@ -110,30 +110,30 @@ function _M.execute()
     --ssl_certs_cache:set(sni, cert_and_key)
   --end
 
-  if cert_and_key == true then
+  --if cert_and_key == true then
     -- use fallback certificate
-    return
-  end
+    --return
+  --end
 
   -- set the certificate for this connection
 
-  local ok, err = ssl.clear_certs()
-  if not ok then
-    log(ERR, "could not clear existing (default) certificates: ", err)
-    return ngx.exit(ngx.ERROR)
-  end
+  --local ok, err = ssl.clear_certs()
+  --if not ok then
+  --  log(ERR, "could not clear existing (default) certificates: ", err)
+  --  return ngx.exit(ngx.ERROR)
+  --end
 
-  ok, err = ssl.set_cert(cert_and_key.cert)
-  if not ok then
-    log(ERR, "could not set configured certificate: ", err)
-    return ngx.exit(ngx.ERROR)
-  end
+  --ok, err = ssl.set_cert(cert_and_key.cert)
+  --if not ok then
+  --  log(ERR, "could not set configured certificate: ", err)
+  --  return ngx.exit(ngx.ERROR)
+  --end
 
-  ok, err = ssl.set_priv_key(cert_and_key.key)
-  if not ok then
-    log(ERR, "could not set configured private key: ", err)
-    return ngx.exit(ngx.ERROR)
-  end
+  --ok, err = ssl.set_priv_key(cert_and_key.key)
+  --if not ok then
+  --  log(ERR, "could not set configured private key: ", err)
+   -- return ngx.exit(ngx.ERROR)
+  --end
 end
 
 
