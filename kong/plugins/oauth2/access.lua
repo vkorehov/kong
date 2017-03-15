@@ -36,6 +36,17 @@ local GRANT_PASSWORD = "password"
 local ERROR = "error"
 local AUTHENTICATED_USERID = "authenticated_userid"
 
+local function load_consumer_into_memory1(consumer_id, anonymous)
+  local result, err = singletons.dao.consumers:find { id = consumer_id }
+  if not result then
+    if anonymous and not err then
+      err = 'anonymous consumer "'..consumer_id..'" not found'
+    end
+    return responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
+  end
+  return result
+end
+
 local function generate_token(conf, api, credential, authenticated_userid, scope, state, expiration, disable_refresh)
   local token_expiration = expiration or conf.token_expiration
 
@@ -46,7 +57,7 @@ local function generate_token(conf, api, credential, authenticated_userid, scope
   end
   
    -- Retrive the consumer from the credential
-  local consumer = cache.get_or_set(cache.consumer_key(credential.consumer_id), nil, load_consumer_into_memory, credential.consumer_id)
+  local consumer = cache.get_or_set(cache.consumer_key(credential.consumer_id), nil, load_consumer_into_memory1, credential.consumer_id)
   
   
   if consumer ~= nil then
