@@ -388,16 +388,11 @@ local function load_token_into_memory(conf, api, access_token)
 end
 
 local function retrieve_token(conf, access_token)
-  local dev_log = require "kong.cmd.utils.nlog"
-  dev_log.printc("---> conf",conf)
-  dev_log.printc("---> access_token",access_token)
-  
   local token
   if access_token then
     token = cache.get_or_set(cache.oauth2_token_key(access_token), nil,
                              load_token_into_memory, conf, ngx.ctx.api, access_token)
   end
-  dev_log.printc("---> token",token)
   return token
 end
 
@@ -479,7 +474,18 @@ local function set_consumer(consumer, credential, token)
 end
 
 local function isEmpty(s)
-  return s == nil or s == ''
+  if s==nil or s==''then
+    return true
+  end
+  return false
+end
+
+local function split(s, delimiter)
+    result = {};
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match);
+    end
+    return result;
 end
 
 local function do_authentication(conf)
@@ -499,7 +505,7 @@ local function do_authentication(conf)
   end
   
   if conf.scopes~=nil and table.getn(conf.scopes)>0 and isEmpty(token.scope)==false then
-     local token_scopes = utils.split(token.scope,",")
+     local token_scopes = split(token.scope,",")
      
      for key,api_scope in pairs(conf.scopes) do 
         --ngx.log(ngx.ERR, "==============================api_scope :"..tostring(api_scope))  
@@ -513,10 +519,6 @@ local function do_authentication(conf)
   end
     
   if (token.api_id and ngx.ctx.api.id ~= token.api_id) or (token.api_id == nil and not conf.global_credentials) then
-    local dev_log = require "kong.cmd.utils.nlog"
-    dev_log.printc("---> token.api_id",token.api_id)
-    dev_log.printc("---> ngx.ctx.api.id",ngx.ctx.api.id)
-    dev_log.printc("---> conf.global_credentials",conf.global_credentials)
     return false, {status = 401, message = {[ERROR] = "invalid_token", error_description = "The access token is invalid or has expired"}, headers = {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_token" error_description="The access token is invalid or has expired"'}}
   end
 
@@ -528,9 +530,6 @@ local function do_authentication(conf)
   if token.expires_in > 0 then -- zero means the token never expires
     local now = timestamp.get_utc()
     if now - token.created_at > (token.expires_in * 1000) then
-      local dev_log = require "kong.cmd.utils.nlog"
-      dev_log.printc("--->now - token.created_at ",now - token.created_at )
-      dev_log.printc("---> token.expires_in * 1000",token.expires_in * 1000)
       return false, {status = 401, message = {[ERROR] = "invalid_token", error_description = "The access token is invalid or has expired"}, headers = {["WWW-Authenticate"] = 'Bearer realm="service" error="invalid_token" error_description="The access token is invalid or has expired"'}}
     end
   end
@@ -584,5 +583,6 @@ function _M.execute(conf)
     end
   end
 end
+
 
 return _M
