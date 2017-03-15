@@ -242,6 +242,8 @@ function _M.new(conf)
     return nil, "secure_message must be a boolean"
   elseif type(conf.default_auth_key) ~= "string" then
     return nil, "default dm auth key must be a string"	
+  elseif type(conf.default_app) ~= "string" then
+    return nil, "default dm app must be a string"
   elseif conf.retry_count ~= nil and type(conf.retry_count) ~= "number" then
     return nil, "retry_count must be a number"
   elseif conf.connection_timeout ~= nil and type(conf.connection_timeout) ~= "number" then
@@ -269,7 +271,7 @@ function _M.new(conf)
     queue_size         	    	= conf.queue_size or 1000,
     queue_sizeMB        	= conf.queue_size_mb * 2^20 or 20 * 2^20,  
     max_sending_queue_size  	= conf.max_sending_queue_size_mb * 2^20 or 200 * 2^20,
-    cur_alf              	= alf_serializer.new(conf.log_request,conf.log_response,conf.log_oauth2_response,conf.max_msg_size_mb,conf.secure_message,conf.secure_patterns,conf.default_auth_key),
+    cur_alf              	= alf_serializer.new(conf.log_request,conf.log_response,conf.log_oauth2_response,conf.max_msg_size_mb,conf.secure_message,conf.secure_patterns,conf.default_auth_key,conf.default_app),
     sending_queue      	    	= {},                             -- FILO queue
     sending_queue_size 	    	= 0,
     last_t              	= huge,

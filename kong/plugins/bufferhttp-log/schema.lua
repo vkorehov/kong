@@ -15,6 +15,7 @@ return {
     secure_message = {type = "boolean", default = false},
     add_request_id = {type = "boolean", default = true},
     secure_patterns = {type = "array", default = { "([Pp]assword\":)\"(.-)\"", "([Tt]oken\":)\"(.-)\""}},
-    default_auth_key = {type = "string", default = "default dm auth key"}
+    default_auth_key = {type = "string", default = "default dm auth key"},
+    default_app = {type = "string", default = "default dm app"}
   }
 }
