@@ -402,7 +402,8 @@ local function load_token_into_memory(conf, api, access_token)
   if not conf.global_credentials then
     api_id = api.id
   end
-  local credentials, err = singletons.dao.oauth2_tokens:find_all { api_id = api_id, access_token = access_token }
+  --local credentials, err = singletons.dao.oauth2_tokens:find_all { api_id = api_id, access_token = access_token }
+  local credentials, err = singletons.dao.oauth2_tokens:find_all {access_token = access_token }
   local result
   if err then
     return responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
