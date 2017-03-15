@@ -97,14 +97,13 @@ function _M.execute()
   --if not cert_and_key then
     -- miss
     -- check shm cache
-    cert_and_key, err = cache.get_or_set(cache.certificate_key(sni), nil,
-                                         find_certificate, sni)
-    if not cert_and_key then
+    --cert_and_key, err = cache.get_or_set(cache.certificate_key(sni), nil,find_certificate, sni)
+    --if not cert_and_key then
       -- use fallback certificate
       return
       --log(ERR, err)
       --return ngx.exit(ngx.ERROR)
-    end
+    --end
 
     -- set Lua-land LRU cache
 
