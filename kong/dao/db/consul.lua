@@ -892,6 +892,7 @@ function aplyFilter(results,filter,schema)
   local filter_ref = shallowcopy(filter)
   
   for index1,result in pairs(results) do
+    filter_ref = shallowcopy(filter)
     for filter_key,filter_value in pairs(filter_ref) do 
       local res_val = result[filter_key]   
       if res_val~=nil then
