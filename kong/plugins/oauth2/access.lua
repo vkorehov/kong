@@ -293,6 +293,9 @@ local function issue_token(conf)
   local state = parameters[STATE]
 
   local is_https, err = check_https(conf.accept_http_if_already_terminated)
+  if conf.accept_http then
+    is_https = true
+  end   
   if not is_https then
     response_params = {[ERROR] = "access_denied", error_description = err or "You must use HTTPS"}
   else
