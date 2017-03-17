@@ -897,8 +897,8 @@ function aplyFilter(results,filter,schema)
       local res_val = result[filter_key]   
       
       if res_val~=nil then
-        -- this is special case and have to be refactored to role tab on consumer
         
+        -- this is special case and have to be refactored to role tab on consumer
         if filter_key == 'roles' then
             local roles_requested = utils.split(filter_value, ",") -- roles requested
             local customer_roles = res_val.split(res_val, ",") -- actual roles
@@ -918,7 +918,7 @@ function aplyFilter(results,filter,schema)
             if all_roles_is_found then  
               filter_ref[filter_key]=nil
             end
-        elseif(res_val==filter_value) then
+        elseif res_val==filter_value then
           filter_ref[filter_key]=nil
         end
         
