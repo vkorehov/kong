@@ -893,17 +893,43 @@ function aplyFilter(results,filter,schema)
   
   for index1,result in pairs(results) do
     filter_ref = shallowcopy(filter)
-    for filter_key,filter_value in pairs(filter_ref) do 
+    for filter_key,filter_value in pairs(filter_ref) do
       local res_val = result[filter_key]   
+      
       if res_val~=nil then
-        if(res_val==filter_value) then
+        -- this is special case and have to be refactored to role tab on consumer
+        
+        if filter_key == 'roles' then
+            local roles_requested = utils.split(filter_value, ",") -- roles requested
+            local customer_roles = res_val.split(res_val, ",") -- actual roles
+            
+            local all_roles_is_found = true
+            for role_index,requested_role in pairs(roles_requested) do
+               local role_is_found = false
+               for role_index1,customer_role in pairs(customer_roles) do
+                  if requested_role == customer_role then
+                    role_is_found = true
+                  end
+               end
+               if role_is_found == false then
+                 all_roles_is_found = false 
+               end
+            end  
+            if all_roles_is_found then  
+              filter_ref[filter_key]=nil
+            end
+        elseif(res_val==filter_value) then
           filter_ref[filter_key]=nil
-        end      
+        end
+        
       end
+      
     end
+    
     if next(filter_ref) == nil then
       table.insert(res,result)
     end
+    
   end
   
   return res  
