@@ -38,6 +38,7 @@ return {
     hide_credentials = { type = "boolean", default = false },
 
     accept_http_if_already_terminated = { required = false, type = "boolean", default = false },
+    accept_http = { required = false, type = "boolean", default = false },
     anonymous = {type = "string", default = "", func = check_user},
     global_credentials = {type = "boolean", default = false},
   },
