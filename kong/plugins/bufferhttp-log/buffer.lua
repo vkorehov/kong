@@ -153,7 +153,7 @@ _send = function(premature, self, to_send)
             body = v.body,
             headers = {
               ["Content-Type"] = "application/json",
-	      ["app_key"] = tostring(v.app_key)
+	      ["dm_auth_key"] = tostring(v.dm_auth_key)
             }
            }
 	
