@@ -74,6 +74,7 @@ function BufferHTTPHandler:log(conf)
   end
 
   if conf.url_pattern ~= nil and conf.url_pattern ~= "" then
+    ngx.log(ngx.ERR, "IJNIINIININNNNIN: "..ngx.var.request_uri, "")
     if ngx.re.match(ngx.var.request_uri, conf.url_pattern) then
       buf:add_entry(ngx, req_body, res_body,conf)
     end
