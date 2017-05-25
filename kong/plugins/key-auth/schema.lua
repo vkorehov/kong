@@ -48,5 +48,9 @@ return {
       default = "",
       func = check_user,
     },
+    scopes = {
+      required = false,
+      type = "array",
+    },
   }
 }
