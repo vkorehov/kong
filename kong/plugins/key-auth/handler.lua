@@ -157,6 +157,14 @@ local function do_authentication(conf)
   return true
 end
 
+function split(s, delimiter)
+    result = {};
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match);
+    end
+    return result;
+end
+
 function KeyAuthHandler:access(conf)
   KeyAuthHandler.super.access(self)
 
