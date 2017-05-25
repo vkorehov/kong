@@ -122,7 +122,7 @@ local function do_authentication(conf)
     local scope = consumer.roles
     
     if scope ==nil or scope=='' then
-      return false, {status = 403, message = "The access token scope is invalid or not defined"}
+      return false, {status = 403, message = "The customer scope is invalid or not defined"}
     end
     
     local user_scopes = split(scope,",")
@@ -138,7 +138,7 @@ local function do_authentication(conf)
     end
     
     if(scope_is_found==false) then
-      return false, {status = 403, message = "The access token scope is invalid or not defined"}            
+      return false, {status = 403, message = "The customer scope is invalid or not defined"}            
     end
   end
   
