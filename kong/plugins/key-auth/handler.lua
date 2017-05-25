@@ -117,7 +117,7 @@ local function do_authentication(conf)
                                     nil, load_consumer, credential.consumer_id)
 
   -- check roles
-  if consumer ~= nil and conf~=nil and table.getn(conf.scopes)>0 then
+  if consumer ~= nil and conf~=nil and conf.scopes ~= nil and table.getn(conf.scopes)>0 then
     local scope_is_found = false
     local scope = consumer.roles
     
