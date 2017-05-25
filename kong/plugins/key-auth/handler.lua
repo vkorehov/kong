@@ -128,9 +128,9 @@ local function do_authentication(conf)
     local user_scopes = split(scope,",")
     
     for key,api_scope in pairs(conf.scopes) do 
-        ngx.log(ngx.ERR, "==============================api_scope :"..tostring(api_scope))  
+        --ngx.log(ngx.ERR, "==============================api_scope :"..tostring(api_scope))  
         for key,user_scope in pairs(user_scopes) do 
-         ngx.log(ngx.ERR, "--------------------------------------token_scope :"..tostring(user_scope))
+         --ngx.log(ngx.ERR, "--------------------------------------token_scope :"..tostring(user_scope))
          if(api_scope==user_scope) then 
             scope_is_found=true
           end
