@@ -73,7 +73,14 @@ function BufferHTTPHandler:log(conf)
     res_body = ctx.bufferhttp.res_body
   end
 
-  buf:add_entry(ngx, req_body, res_body,conf)
+  if conf.url_pattern ~= nil and conf.url_pattern ~= "" then
+    if ngx.re.match(ngx.var.request_uri, conf.url_pattern) then
+      buf:add_entry(ngx, req_body, res_body,conf)
+    end
+  else
+    buf:add_entry(ngx, req_body, res_body,conf)
+  end
+  
 end
 
 BufferHTTPHandler.PRIORITY = 2000

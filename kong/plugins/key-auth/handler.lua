@@ -116,6 +116,32 @@ local function do_authentication(conf)
   local consumer = cache.get_or_set(cache.consumer_key(credential.consumer_id),
                                     nil, load_consumer, credential.consumer_id)
 
+  -- check roles
+  if consumer ~= nil and conf~=nil and conf.scopes ~= nil and table.getn(conf.scopes)>0 then
+    local scope_is_found = false
+    local scope = consumer.roles
+    
+    if scope ==nil or scope=='' then
+      return false, {status = 403, message = "The customer scope is invalid or not defined"}
+    end
+    
+    local user_scopes = split(scope,",")
+    
+    for key,api_scope in pairs(conf.scopes) do 
+        --ngx.log(ngx.ERR, "==============================api_scope :"..tostring(api_scope))  
+        for key,user_scope in pairs(user_scopes) do 
+         --ngx.log(ngx.ERR, "--------------------------------------token_scope :"..tostring(user_scope))
+         if(api_scope==user_scope) then 
+            scope_is_found=true
+          end
+        end
+    end
+    
+    if(scope_is_found==false) then
+      return false, {status = 403, message = "The customer scope is invalid or not defined"}            
+    end
+  end
+  
   set_consumer(consumer, credential)
   --set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   --set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
@@ -129,6 +155,14 @@ local function do_authentication(conf)
   --ngx.ctx.authenticated_credential = credential
   --ngx.ctx.authenticated_consumer = consumer
   return true
+end
+
+function split(s, delimiter)
+    result = {};
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match);
+    end
+    return result;
 end
 
 function KeyAuthHandler:access(conf)

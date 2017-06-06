@@ -12,6 +12,7 @@ return {
   no_consumer = true,
   fields = {
     anonymous = {type = "string", default = "", func = check_user},
-    hide_credentials = {type = "boolean", default = false}
+    hide_credentials = {type = "boolean", default = false},
+    scopes = {required = false, type = "array"}
   }
 }

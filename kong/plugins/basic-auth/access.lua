@@ -96,6 +96,7 @@ local function set_consumer(consumer, credential)
   ngx_set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   ngx_set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
   ngx_set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
+  ngx_set_header("x-authenticated-roles",consumer.roles)
   ngx.ctx.authenticated_consumer = consumer
   if credential then
     ngx_set_header(constants.HEADERS.CREDENTIAL_USERNAME, credential.username)
@@ -135,6 +136,32 @@ local function do_authentication(conf)
   local consumer = cache.get_or_set(cache.consumer_key(credential.consumer_id),
                    nil, load_consumer_into_memory, credential.consumer_id, false)
 
+    -- check roles
+  if consumer ~= nil and conf~=nil and conf.scopes ~= nil and table.getn(conf.scopes)>0 then
+    local scope_is_found = false
+    local scope = consumer.roles
+    
+    if scope ==nil or scope=='' then
+      return false, {status = 403, message = "The customer scope is invalid or not defined"}
+    end
+    
+    local user_scopes = split(scope,",")
+    
+    for key,api_scope in pairs(conf.scopes) do 
+        --ngx.log(ngx.ERR, "==============================api_scope :"..tostring(api_scope))  
+        for key,user_scope in pairs(user_scopes) do 
+         --ngx.log(ngx.ERR, "--------------------------------------token_scope :"..tostring(user_scope))
+         if(api_scope==user_scope) then 
+            scope_is_found=true
+          end
+        end
+    end
+    
+    if(scope_is_found==false) then
+      return false, {status = 403, message = "The customer scope is invalid or not defined"}            
+    end
+  end
+  
   set_consumer(consumer, credential)
 
   return true
