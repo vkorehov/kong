@@ -43,6 +43,14 @@ return {
         }
       }
     },
+	copy = {
+      type = "table",
+      schema = {
+        fields = {
+          from_body_to_header = {type = "array", default = {}}
+        }
+      }
+    },
     replace = {
       type = "table",
       schema = {

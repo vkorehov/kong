@@ -328,6 +328,11 @@ local function transform_multipart_body(conf, body, content_length, content_type
   end
 end
 
+local function trace(message, data) 
+  local dev_log = require "kong.cmd.utils.nlog"
+  dev_log.printc(message,data)
+end
+
 local function transform_body(conf)
   local content_type_value = req_get_headers()[CONTENT_TYPE]
   local content_type = get_content_type(content_type_value)
@@ -336,6 +341,7 @@ local function transform_body(conf)
   -- Call req_read_body to read the request body first
   req_read_body()
   local body = req_get_body_data()
+  
   local is_body_transformed = false
   local content_length = (body and #body) or 0
 
@@ -352,6 +358,58 @@ local function transform_body(conf)
     req_set_header(CONTENT_LENGTH, #body)
   end
 end
+
+local function search_in_table(key_name,k,v)
+    local found = false
+	local key_value = nil
+	if type(v) == "table" then
+		for k1,v1 in pairs(v) do
+			if found==false then
+			  found,key_value = search_in_table(key_name,k1,v1)
+			end
+		end
+	elseif type(v)=='string' and k==key_name then
+		found=true
+		key_value = v
+	end
+	return found,key_value
+end
+
+local function search_in_json_body(key_name, body)
+	local key_found = false
+	local key_value = nil
+	local content_length = (body and #body) or 0
+	local json_body = parse_json(body)
+	if json_body == nil and content_length > 0 then return false, nil end
+	if content_length > 0 then
+	    key_found,key_value = search_in_table(key_name,key_name,json_body)
+		if key_found then return key_found, key_value end
+	end
+	
+end
+
+local function copy_from_body_to_header(conf)
+	local content_type_value = req_get_headers()[CONTENT_TYPE]
+	local content_type = get_content_type(content_type_value)
+	if content_type == nil or #conf.copy.from_body_to_header < 1 then return end
+
+
+	req_read_body()
+	local body = req_get_body_data()
+
+	local key_value;
+	if content_type == JSON then
+	  for i = 1, #conf.copy.from_body_to_header do
+		
+		local key_name = conf.copy.from_body_to_header[i]
+		local is_key_found, key_value = search_in_json_body(key_name, body)
+		if is_key_found then
+			req_set_header(key_name, key_value)
+		end
+	  end
+	end
+end
+
 
 local function transform_method(conf)
   if conf.http_method then
@@ -383,6 +441,7 @@ function _M.execute(conf)
   transform_body(conf)
   transform_headers(conf)
   transform_querystrings(conf)
+  copy_from_body_to_header(conf)
 end
 
 return _M
