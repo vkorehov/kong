@@ -457,7 +457,16 @@ end
 
 
 function _M:insert(key_name, schema, model, constraints, options)
-   trace("insert "..key_name,model)
+  trace("insert "..key_name,model)
+  local key_root = get_key_root(self)
+  -- Look for existing record
+  --local res = self:find(key_name, schema, filter)
+  --if res~=nil then
+	--error(tostring("Record with key exist"));
+	--model = res
+  --end	
+  
+  
   -- obtains all key kombinations for entity
   local pk_paths = get_pk_paths(schema, model,key_name)
   local fk_paths = get_fk_paths(schema,model,key_name)
@@ -466,9 +475,21 @@ function _M:insert(key_name, schema, model, constraints, options)
   local key_paths = {}
   for k,v in pairs(pk_paths) do table.insert(key_paths,v) end
   for k,v in pairs(fk_paths) do table.insert(key_paths,v) end
-  for k,v in pairs(unique_key_paths) do table.insert(key_paths,v) end
-  
-  local key_root = get_key_root(self)
+  for k,v in pairs(unique_key_paths) do 
+	local consul_key = key_root.."/"..v
+	local res,err = self:find_by_key(consul_key)
+	if err then
+	  ngx.log(ngx.ERR, "[consul] failed cleanup ttl key "..to_clean_up_key.." -> "..tostring(err))
+	  return nil, err
+	end
+	
+	if res~=nil and next(res) ~= nil then
+	  ngx.log(ngx.ERR, "[consul]  Record with key ["..consul_key.."] exist ")
+	  error(tostring("[consul]  Record with key ["..consul_key.."] exist"));
+	end
+	
+	table.insert(key_paths,v) 
+  end
   
   model.created_at=math.floor(luatz.gettime.gettime())*1000 -- sec*1000=milisec
   
@@ -477,7 +498,7 @@ function _M:insert(key_name, schema, model, constraints, options)
   --consider to execute multiple put operations in single consul transaction
   for i, key_path in pairs(key_paths) do
     local consul_key = key_root.."/"..key_path
-    local body,err = self:http_call(consul_key,"PUT",modeljson)
+	local body,err = self:http_call(consul_key,"PUT",modeljson)
 
     if err then
       ngx.log(ngx.ERR, "[consul] failed to insert value. Error details "..tostring(err))
