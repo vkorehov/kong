@@ -41,7 +41,7 @@ local _mt = {
   __index = _M
 }
 
-function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure_message,secure_patterns,default_auth_key,default_app)
+function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure_message,secure_patterns,default_auth_key,default_app,dm_name)
   local alf = {
     log_request = log_request,
     log_response = log_response,
@@ -51,6 +51,7 @@ function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure
     secure_patterns = secure_patterns,
     default_auth_key = default_auth_key,
     default_app = default_app,
+    dm_name = dm_name,
     entries = {}
   }
 
@@ -94,6 +95,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   self.secure_patterns = conf.secure_patterns
   self.default_auth_key = conf.default_auth_key	
   self.default_app = conf.default_app
+  self.dm_name = conf.dm_name
 	
   -- retrieval
   local var = _ngx.var
