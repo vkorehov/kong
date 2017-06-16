@@ -177,7 +177,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   --local result = "success"
   local isTimeOut = "false"
   local now = timestamp.get_utc()
-  local dm_name = "http"
+  local name_value = "http"
 	
   if ngx.status >= 400 then
     isError = 'true'
@@ -198,7 +198,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   end
 
   if self.dm_name ~= nil and self.dm_name ~= "" then
-    dm_name = self.dm_name
+    name_value = self.dm_name
   end
 	
   --request_headers["dm_http_method"]= req_get_method()
@@ -225,7 +225,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     source = "KONG_API",
     timestamp = now,
     id = uuid(),
-    name = dm_name,
+    name = name_value,
     headers = request_headers,
     payload = {
       request = {
