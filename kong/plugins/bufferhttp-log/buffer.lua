@@ -271,7 +271,7 @@ function _M.new(conf)
     queue_size         	    	= conf.queue_size or 1000,
     queue_sizeMB        	= conf.queue_size_mb * 2^20 or 20 * 2^20,  
     max_sending_queue_size  	= conf.max_sending_queue_size_mb * 2^20 or 200 * 2^20,
-    cur_alf              	= alf_serializer.new(conf.log_request,conf.log_response,conf.log_oauth2_response,conf.max_msg_size_mb,conf.secure_message,conf.secure_patterns,conf.default_auth_key,conf.default_app),
+    cur_alf              	= alf_serializer.new(conf.log_request,conf.log_response,conf.log_oauth2_response,conf.max_msg_size_mb,conf.secure_message,conf.secure_patterns,conf.default_auth_key,conf.default_app,conf.dm_name),
     sending_queue      	    	= {},                             -- FILO queue
     sending_queue_size 	    	= 0,
     last_t              	= huge,
