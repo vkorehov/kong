@@ -196,6 +196,9 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     request_headers["dm_app"]= self.default_app
   end
 
+  if self.dm_name ~= nil and self.dm_name ~= "" then
+    request_headers["dm_name"]= self.dm_name
+  end
 	
   --request_headers["dm_http_method"]= req_get_method()
   request_headers["dm_http_method"]= req_get_method()
