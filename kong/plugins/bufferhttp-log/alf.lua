@@ -41,7 +41,7 @@ local _mt = {
   __index = _M
 }
 
-function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure_message,secure_patterns,default_auth_key,default_app)
+function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure_message,secure_patterns,default_auth_key,default_app,dm_name)
   local alf = {
     log_request = log_request,
     log_response = log_response,
@@ -51,6 +51,7 @@ function _M.new(log_request,log_response,log_oauth2_response,max_msg_size,secure
     secure_patterns = secure_patterns,
     default_auth_key = default_auth_key,
     default_app = default_app,
+    dm_name = dm_name,
     entries = {}
   }
 
@@ -94,6 +95,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   self.secure_patterns = conf.secure_patterns
   self.default_auth_key = conf.default_auth_key	
   self.default_app = conf.default_app
+  self.dm_name = conf.dm_name
 	
   -- retrieval
   local var = _ngx.var
@@ -175,6 +177,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
   --local result = "success"
   local isTimeOut = "false"
   local now = timestamp.get_utc()
+  local name_value = "http"
 	
   if ngx.status >= 400 then
     isError = 'true'
@@ -194,6 +197,9 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     request_headers["dm_app"]= self.default_app
   end
 
+  if self.dm_name ~= nil and self.dm_name ~= "" then
+    name_value = self.dm_name
+  end
 	
   --request_headers["dm_http_method"]= req_get_method()
   request_headers["dm_http_method"]= req_get_method()
@@ -219,7 +225,7 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     source = "KONG_API",
     timestamp = now,
     id = uuid(),
-    name = "http",
+    name = name_value,
     headers = request_headers,
     payload = {
       request = {

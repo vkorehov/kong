@@ -17,6 +17,7 @@ return {
     secure_patterns = {type = "array", default = { "([Pp]assword\":)\"(.-)\"", "([Tt]oken\":)\"(.-)\""}},
     default_auth_key = {type = "string", default = "default dm auth key"},
     default_app = {type = "string", default = "default dm app"},
+    dm_name = { required = false, type = "string"},
     url_pattern = { required = false, type = "string"}
   }
 }
