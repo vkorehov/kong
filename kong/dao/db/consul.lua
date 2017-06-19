@@ -477,17 +477,18 @@ function _M:insert(key_name, schema, model, constraints, options)
   for k,v in pairs(fk_paths) do table.insert(key_paths,v) end
   for k,v in pairs(unique_key_paths) do 
 	local consul_key = key_root.."/"..v
-	local res,err = self:find_by_key(consul_key)
-	if err then
-	  ngx.log(ngx.ERR, "[consul] failed cleanup ttl key "..to_clean_up_key.." -> "..tostring(err))
-	  return nil, err
+	if options.isUpdate == nil then
+		local res,err = self:find_by_key(consul_key)
+		if err then
+		  ngx.log(ngx.ERR, "[consul] failed to insert "..consul_key.." -> "..tostring(err))
+		  return nil, err
+		end
+		
+		if res~=nil and next(res) ~= nil then
+		  ngx.log(ngx.ERR, "[consul]  Record with key ["..consul_key.."] exist ")
+		  error(tostring("[consul]  Record with key ["..consul_key.."] exist"));
+		end
 	end
-	
-	if res~=nil and next(res) ~= nil then
-	  ngx.log(ngx.ERR, "[consul]  Record with key ["..consul_key.."] exist ")
-	  error(tostring("[consul]  Record with key ["..consul_key.."] exist"));
-	end
-	
 	table.insert(key_paths,v) 
   end
   
@@ -789,6 +790,7 @@ function _M:count(key_name, filter, schema)
 end
 
 function _M:update(key_name, schema, constraints, filter, values, nils, full, model, options)
+  options["isUpdate"]=true
   local res,err = self:insert(key_name, schema, model, constraints, options)
   if err~=nil then
      ngx.log(ngx.ERR, "[consul] failed to update value. Error details "..tostring(err))
