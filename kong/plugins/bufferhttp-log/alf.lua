@@ -188,6 +188,17 @@ function _M:add_entry(_ngx, req_body_str, resp_body_str,conf)
     isTimeOut = 'true'
     --result = "error"
   end
+  
+  local uri_args = req_get_uri_args()
+  --search in ngx context
+  if ngx.ctx.dm_auth_key ~= nil then
+	request_headers["dm_auth_key"]= ngx.ctx.dm_auth_key
+  end
+  
+  -- search in querystring and not found in context
+  if uri_args["dm_auth_key"] ~= nil and ngx.ctx.dm_auth_key==nil then
+	request_headers["dm_auth_key"]= uri_args["dm_auth_key"]
+  end
 
   if not request_headers["dm_auth_key"] then
     request_headers["dm_auth_key"]= self.default_auth_key

@@ -85,6 +85,7 @@ local function do_authentication(conf)
         set_uri_args(uri_args)
         clear_header(name)
       end
+      ngx.ctx.dm_auth_key = key
       break
     elseif type(v) == "table" then
       -- duplicate API key, HTTP 401
